@@ -224,16 +224,34 @@ Every response is parsed by a zod schema. 429 responses trigger exponential back
 - `summarizeMatchForPlayer(match, puuid, role): Result<PlayerCoaching, AIError>`
 - `summarizeMatchForTeam(match): Result<TeamCoaching, AIError>`
 
-Prompts versioned in `prompts/` files; `prompt_hash` stored in `ai_summaries` so we can detect prompt changes and re-run on demand. Structured output via `responseSchema` (JSON mode):
+Prompts versioned in `prompts/` files; `prompt_hash` stored in `ai_summaries` so we can detect prompt changes and re-run on demand. Structured output via `responseSchema` (JSON mode).
+
+Each player call returns **two blocks** in a single Gemini request — `public` (posted in the match thread, team-visible, blameless framing) and `private` (DM'd to that player only, candid and direct):
 
 ```ts
 type PlayerCoaching = {
-  tldr: string                 // <= 160 chars
-  did_well: string[]           // 1-3 items
-  improve: string[]            // 1-3 items
-  coaching_tip: string         // role-specific actionable next-game advice
+  public: {
+    tldr: string               // <= 160 chars, team-safe framing
+    highlight: string          // one positive moment worth calling out
+    focus_area: string         // one improvement area, blameless wording
+  }
+  private: {
+    tldr: string               // <= 200 chars, candid
+    did_well: string[]         // 1-3 items
+    improve: string[]          // 1-3 items, specific and direct
+    coaching_tip: string       // role-specific actionable next-game advice
+  }
+}
+
+type TeamCoaching = {
+  tldr: string                 // posted in match thread, public
+  what_worked: string[]
+  what_to_fix: string[]
+  next_match_focus: string
 }
 ```
+
+A single Gemini call per player produces both blocks (cheaper, more consistent tone across the two outputs). The full `PlayerCoaching` JSON is persisted in `ai_summaries.output`; the dispatcher decides where each block goes.
 
 ## 7. Slash command surface (v1)
 
@@ -265,10 +283,26 @@ type PlayerCoaching = {
 |---|---|---|
 | `pollPremier` | `node-cron`: every 5 min Wed/Thu/Sun 8pm–1am region-local; every 30 min otherwise | Fetch team's recent matches, diff against `matches` table, enqueue `ingestMatch` for each new one |
 | `ingestMatch` | enqueued by `pollPremier` or `/match link` | Pulls full match detail, persists `matches` row, opens a thread in announcements channel with stats embed, enqueues per-player and team-level `summarizeMatch` jobs |
-| `summarizeMatch` | enqueued by `ingestMatch` or `/match coach` | Calls Gemini, persists `ai_summaries`, posts inside the match thread with player @mention |
+| `summarizeMatch` | enqueued by `ingestMatch` or `/match coach` | Calls Gemini once per player; persists full `PlayerCoaching` to `ai_summaries`; posts the `public` block in the match thread with player @mention; DMs the player the `private` block. Team-level summary is posted in the thread (no DM). See §8.1 for the DM-disabled fallback. |
 | `sendReminder` | scheduled per scrim/Premier match | Pings `member-role` with map/time at T-60min and T-10min |
 
 Queue config: poll every 2s, max 3 concurrent jobs, exponential backoff (5s → 30s → 5m → 30m), max 5 attempts then `status='failed'` (manual replay only).
+
+### 8.1 Public/private coaching delivery
+
+Each player gets two AI outputs per match (see §6.2 `PlayerCoaching`):
+
+1. **Public block** → posted as a reply in the match thread, prefixed with the player's @mention. Visible to the whole team. Blameless, focused on a highlight + one focus area.
+2. **Private block** → DM'd to the player. Candid, multiple `did_well` / `improve` items, role-specific coaching tip.
+
+**DM-disabled fallback**: if `User.send()` throws `DiscordAPIError[50007]` (Cannot send messages to this user), the job:
+- logs at `warn` level with `discord_id` and `match_id`
+- posts a single ephemeral note to the captain in the match thread: *"Couldn't DM <@user> their private coaching — they need to enable DMs from server members in Privacy Settings. Captain can run `/match coach @user <match-id>` to retry."*
+- marks the job `done` (no retry — DM settings won't change without user action)
+
+The `private` block is still persisted in `ai_summaries.output`, so a later `/match coach` retry doesn't re-call Gemini if the prompt hash matches.
+
+**Opt-out**: not in v1. If a player wants to stop receiving DM coaching, they can block the bot via Discord's privacy settings. Add explicit per-player opt-out to the v2 parking lot only if requested.
 
 ## 9. Permissions
 
