@@ -136,15 +136,17 @@ CREATE UNIQUE INDEX players_puuid_per_guild ON players (guild_id, puuid);
 CREATE TABLE matches (
   guild_id TEXT NOT NULL,
   match_id TEXT NOT NULL,           -- henrik match id
+  season_id TEXT,                   -- riot season/act id from match payload, used by /stats season
   played_at INTEGER NOT NULL,
   map TEXT,
-  result TEXT,                      -- win|loss|draw
+  result TEXT,                      -- win|loss|draw|no_result (forfeit / no-show)
   score_us INTEGER,
   score_them INTEGER,
   raw_json TEXT NOT NULL,           -- full payload for re-rendering
   thread_id TEXT,                   -- discord thread for this match
   PRIMARY KEY (guild_id, match_id)
 );
+CREATE INDEX matches_season ON matches (guild_id, season_id);
 
 CREATE TABLE scrims (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -252,7 +254,7 @@ type PlayerCoaching = {
 - `/match coach @player <match-id>` — re-runs AI for one player
 - `/vod add <url> [match-id]`
 - `/vod note <vod-id> <mm:ss> [@player] <text>`
-- `/stats season` — rolling team stats (W-L, avg ADR/HS%, agent picks)
+- `/stats season` — team stats over the current Premier season. Season boundary is taken from the `season_id` field on the most recent ingested match; matches whose `season_id` differs are excluded. Reports W-L, avg ADR, avg HS%, top agent picks per player, map win-rate.
 
 **Anyone**
 - `/help`
