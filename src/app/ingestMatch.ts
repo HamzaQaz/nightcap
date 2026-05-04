@@ -5,10 +5,12 @@ import { buildMatchEmbed } from '../adapters/discord/embeds/matchEmbed.js'
 import type { MatchAnnouncer } from '../ports/announcer.js'
 import type { MatchDataProvider } from '../ports/matchData.js'
 import type {
+  JobRepository,
   MatchRepository,
   PlayerRepository,
   TeamRepository,
 } from '../ports/repositories.js'
+import { SUMMARIZE_MATCH_JOB } from '../jobs/summarizeMatch.js'
 
 export type IngestMatchDeps = {
   teamRepo: TeamRepository
@@ -16,6 +18,7 @@ export type IngestMatchDeps = {
   playerRepo: PlayerRepository
   provider: MatchDataProvider
   announcer: MatchAnnouncer
+  jobRepo: JobRepository
 }
 
 export type IngestMatchInput = { guildId: string; matchId: string }
@@ -76,6 +79,20 @@ export const ingestMatch = async (
     post.value.threadId,
   )
   if (isErr(setThread)) return setThread
+
+  for (const puuid of detail.value.ourPuuids) {
+    deps.jobRepo.enqueue(SUMMARIZE_MATCH_JOB, {
+      kind: 'player',
+      guildId: input.guildId,
+      matchId: detail.value.matchId,
+      playerPuuid: puuid,
+    })
+  }
+  deps.jobRepo.enqueue(SUMMARIZE_MATCH_JOB, {
+    kind: 'team',
+    guildId: input.guildId,
+    matchId: detail.value.matchId,
+  })
 
   return ok({ skipped: false })
 }

@@ -38,7 +38,7 @@ const handlers = new Map([
   ['pollPremier', makePollPremierHandler({ teamRepo, matchRepo, provider, jobRepo })],
   [
     'ingestMatch',
-    makeIngestMatchHandler({ teamRepo, matchRepo, playerRepo, provider, announcer }),
+    makeIngestMatchHandler({ teamRepo, matchRepo, playerRepo, provider, announcer, jobRepo }),
   ],
 ])
 

@@ -3,6 +3,7 @@ import { isErr, isOk, ok } from '../domain/result.js'
 import type { MatchDataProvider, MatchDetail } from '../ports/matchData.js'
 import type { MatchAnnouncer } from '../ports/announcer.js'
 import type {
+  JobRepository,
   MatchRepository,
   PlayerRepository,
   TeamRecord,
@@ -56,7 +57,10 @@ const fakeDeps = (overrides: Partial<Parameters<typeof ingestMatch>[0]> = {}) =>
   const announcer = {
     postMatch: vi.fn().mockResolvedValue(ok({ threadId: 'thread-1' })),
   } as unknown as MatchAnnouncer
-  return { teamRepo, matchRepo, playerRepo, provider, announcer, ...overrides }
+  const jobRepo = {
+    enqueue: vi.fn().mockReturnValue(ok(1)),
+  } as unknown as JobRepository
+  return { teamRepo, matchRepo, playerRepo, provider, announcer, jobRepo, ...overrides }
 }
 
 describe('ingestMatch', () => {
