@@ -34,6 +34,16 @@ export type MatchDetail = {
   raw: unknown
 }
 
+export type UpcomingMatch = {
+  matchTimeStart: number
+  matchTimeEnd: number
+  eventType: 'LEAGUE' | 'SCRIM' | 'TOURNAMENT'
+  mapName: string
+  mapId: string
+  conference: string
+  seasonId: string
+}
+
 export interface MatchDataProvider {
   resolveAccount(name: string, tag: string): Promise<Result<ResolvedAccount, DomainError>>
   listRecentMatches(
@@ -45,4 +55,9 @@ export interface MatchDataProvider {
     matchId: string,
     teamPuuids: string[],
   ): Promise<Result<MatchDetail, DomainError>>
+  getPremierSchedule(
+    region: string,
+    conference: string,
+    limit?: number,
+  ): Promise<Result<UpcomingMatch[], DomainError>>
 }

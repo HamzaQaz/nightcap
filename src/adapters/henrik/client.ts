@@ -8,26 +8,40 @@ import type {
   MatchSummary,
   ResolvedAccount,
   ScoreboardRow,
+  UpcomingMatch,
 } from '../../ports/matchData.js'
+import { resolveSchedule } from './schedule.js'
 import {
   HenrikAccount,
   HenrikMatchDetail,
   type HenrikMatchDetailType,
   HenrikPremierHistory,
+  HenrikSeasonsResponse,
+  type HenrikSeasonsType,
 } from './schemas.js'
 
 const BASE = 'https://api.henrikdev.xyz/valorant'
+const SCHEDULE_TTL_MS = 6 * 60 * 60 * 1000
 
-export type HenrikOpts = { apiKey?: string | undefined; baseUrl?: string }
+export type HenrikOpts = {
+  apiKey?: string | undefined
+  baseUrl?: string
+  now?: () => number
+}
+
+type CachedSchedule = { fetchedAt: number; data: HenrikSeasonsType }
 
 export class HenrikClient implements MatchDataProvider {
   private readonly base: string
   private readonly headers: Record<string, string>
+  private readonly now: () => number
+  private readonly scheduleCache = new Map<string, CachedSchedule>()
 
   constructor(opts: HenrikOpts) {
     this.base = opts.baseUrl ?? BASE
     this.headers = { Accept: 'application/json' }
     if (opts.apiKey) this.headers.Authorization = opts.apiKey
+    this.now = opts.now ?? (() => Date.now())
   }
 
   async resolveAccount(
@@ -81,6 +95,32 @@ export class HenrikClient implements MatchDataProvider {
     if (!parsed.success)
       return err(providerError('henrik', 'bad_response', parsed.error.message))
     return ok(toMatchDetail(parsed.data, new Set(teamPuuids)))
+  }
+
+  async getPremierSchedule(
+    region: string,
+    conference: string,
+    limit = 4,
+  ): Promise<Result<UpcomingMatch[], DomainError>> {
+    const now = this.now()
+    const cacheKey = `${region}|${conference}`
+    const cached = this.scheduleCache.get(cacheKey)
+    let data: HenrikSeasonsType
+    if (cached && now - cached.fetchedAt < SCHEDULE_TTL_MS) {
+      data = cached.data
+    } else {
+      const url = `${this.base}/v1/premier/seasons/${encodeURIComponent(region)}`
+      const resp = await fetchJson(url, { headers: this.headers })
+      if (resp.status === 429) return err(providerError('henrik', 'rate_limited', 'rate limited'))
+      if (resp.status >= 400)
+        return err(providerError('henrik', 'unavailable', `status=${resp.status}`))
+      const parsed = HenrikSeasonsResponse.safeParse(resp.json)
+      if (!parsed.success)
+        return err(providerError('henrik', 'bad_response', parsed.error.message))
+      data = parsed.data
+      this.scheduleCache.set(cacheKey, { fetchedAt: now, data })
+    }
+    return ok(resolveSchedule(data, conference, limit, now))
   }
 }
 

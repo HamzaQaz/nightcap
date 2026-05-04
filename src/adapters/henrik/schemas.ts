@@ -71,3 +71,35 @@ export const HenrikMatchDetail = z.object({
 })
 
 export type HenrikMatchDetailType = z.infer<typeof HenrikMatchDetail>
+
+const HenrikEventTemplate = z.object({
+  id: z.string(),
+  type: z.enum(['LEAGUE', 'SCRIM', 'TOURNAMENT']),
+  map_selection: z.object({
+    type: z.enum(['RANDOM', 'PICKBAN']),
+    maps: z.array(z.object({ id: z.string(), name: z.string() })).default([]),
+  }),
+  points_required_to_participate: z.number().optional(),
+})
+
+const HenrikScheduledEvent = z.object({
+  event_id: z.string(),
+  starts_at: z.string(),
+  ends_at: z.string(),
+  conference: z.string(),
+})
+
+export const HenrikSeason = z.object({
+  id: z.string(),
+  starts_at: z.string(),
+  ends_at: z.string(),
+  events: z.array(HenrikEventTemplate).default([]),
+  scheduled_events: z.array(HenrikScheduledEvent).default([]),
+})
+
+export const HenrikSeasonsResponse = z.object({
+  status: z.number(),
+  data: z.array(HenrikSeason),
+})
+
+export type HenrikSeasonsType = z.infer<typeof HenrikSeasonsResponse>
