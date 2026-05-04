@@ -176,3 +176,36 @@ export interface PollRsvpsRepository {
   countYes(pollId: number): Result<number, DomainError>
   listByPoll(pollId: number): Result<PollRsvpRecord[], DomainError>
 }
+
+export type VodRecord = {
+  id: number
+  guildId: string
+  matchId: string | null
+  url: string
+  threadId: string | null
+  addedBy: string
+  createdAt: number
+}
+
+export interface VodsRepository {
+  insert(v: Omit<VodRecord, 'id'>): Result<number, DomainError>
+  setThreadId(id: number, threadId: string): Result<void, DomainError>
+  findById(id: number): Result<VodRecord | null, DomainError>
+  listByGuild(guildId: string, limit: number): Result<VodRecord[], DomainError>
+  findByMatchId(guildId: string, matchId: string): Result<VodRecord | null, DomainError>
+}
+
+export type VodNoteRecord = {
+  id: number
+  vodId: number
+  timestampSeconds: number
+  targetDiscordId: string | null
+  authorDiscordId: string
+  text: string
+  createdAt: number
+}
+
+export interface VodNotesRepository {
+  insert(n: Omit<VodNoteRecord, 'id'>): Result<number, DomainError>
+  listByVod(vodId: number): Result<VodNoteRecord[], DomainError>
+}
