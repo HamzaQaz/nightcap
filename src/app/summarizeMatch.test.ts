@@ -227,12 +227,11 @@ describe('summarizeMatchForPlayer', () => {
       matchId: 'M-1',
       playerPuuid: 'p1',
     })
-    const coachCall = (deps.coach.summarizeMatchForPlayer as ReturnType<typeof vi.fn>).mock
-      .calls[0][0]
-    expect(coachCall.role).toBe('flex')
-    expect(coachCall.preRoleAssignment).toBe(true)
-    const postCall = (deps.announcer.postInThread as ReturnType<typeof vi.fn>).mock.calls[0][1]
-    expect(postCall).toContain('No assigned role yet')
+    const coachCalls = (deps.coach.summarizeMatchForPlayer as ReturnType<typeof vi.fn>).mock.calls
+    expect(coachCalls[0]?.[0].role).toBe('flex')
+    expect(coachCalls[0]?.[0].preRoleAssignment).toBe(true)
+    const postCalls = (deps.announcer.postInThread as ReturnType<typeof vi.fn>).mock.calls
+    expect(postCalls[0]?.[1]).toContain('No assigned role yet')
   })
 
   it('errs if match has no thread', async () => {
@@ -256,8 +255,8 @@ describe('summarizeMatchForTeam', () => {
     const r = await summarizeMatchForTeam(deps, { guildId: 'g1', matchId: 'M-1' })
     expect(isOk(r)).toBe(true)
     expect(deps.coach.summarizeMatchForTeam).toHaveBeenCalled()
-    const upsertCall = (deps.aiSummariesRepo.upsert as ReturnType<typeof vi.fn>).mock.calls[0][0]
-    expect(upsertCall.playerPuuid).toBe(TEAM_PUUID)
+    const upsertCalls = (deps.aiSummariesRepo.upsert as ReturnType<typeof vi.fn>).mock.calls
+    expect(upsertCalls[0]?.[0].playerPuuid).toBe(TEAM_PUUID)
     expect(deps.announcer.postInThread).toHaveBeenCalled()
   })
 

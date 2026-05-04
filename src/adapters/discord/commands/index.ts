@@ -26,5 +26,5 @@ export const allCommands = (deps: CommandDeps): SlashCommand[] => [
   linkCommand(deps.provider, deps.playerRepo),
   unlinkCommand(deps.playerRepo),
   rosterCommand(deps.provider, deps.playerRepo),
-  matchCommand(deps.matchRepo, deps.jobRepo),
+  matchCommand(deps.matchRepo, deps.jobRepo, deps.playerRepo),
 ]
