@@ -1,0 +1,19 @@
+[Unit]
+Description=premier-bot Discord service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=premier
+Group=premier
+WorkingDirectory=/opt/premier-bot
+EnvironmentFile=/etc/premier-bot.env
+ExecStart=/usr/bin/node --enable-source-maps dist/main.js
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
