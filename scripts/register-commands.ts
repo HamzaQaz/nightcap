@@ -4,8 +4,10 @@ import { allCommands } from '../src/adapters/discord/commands/index.js'
 import { HenrikClient } from '../src/adapters/henrik/client.js'
 import { openDb } from '../src/adapters/sqlite/db.js'
 import { SqliteJobRepository } from '../src/adapters/sqlite/jobRepo.js'
+import { SqliteMatchNightsRepository } from '../src/adapters/sqlite/matchNightsRepo.js'
 import { SqliteMatchRepository } from '../src/adapters/sqlite/matchRepo.js'
 import { SqlitePlayerRepository } from '../src/adapters/sqlite/playerRepo.js'
+import { SqliteScrimsRepository } from '../src/adapters/sqlite/scrimsRepo.js'
 import { SqliteTeamRepository } from '../src/adapters/sqlite/teamRepo.js'
 import { loadEnv } from '../src/config/env.js'
 
@@ -18,6 +20,8 @@ const body = allCommands({
   playerRepo: new SqlitePlayerRepository(db),
   matchRepo: new SqliteMatchRepository(db),
   jobRepo: new SqliteJobRepository(db),
+  matchNightsRepo: new SqliteMatchNightsRepository(db),
+  scrimRepo: new SqliteScrimsRepository(db),
   provider: new HenrikClient({ apiKey: env.HENRIK_API_KEY }),
 }).map((c) => c.data.toJSON())
 

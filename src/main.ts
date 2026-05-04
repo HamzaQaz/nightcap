@@ -8,8 +8,10 @@ import { routeInteraction } from './adapters/discord/router.js'
 import { HenrikClient } from './adapters/henrik/client.js'
 import { openDb } from './adapters/sqlite/db.js'
 import { SqliteJobRepository } from './adapters/sqlite/jobRepo.js'
+import { SqliteMatchNightsRepository } from './adapters/sqlite/matchNightsRepo.js'
 import { SqliteMatchRepository } from './adapters/sqlite/matchRepo.js'
 import { SqlitePlayerRepository } from './adapters/sqlite/playerRepo.js'
+import { SqliteScrimsRepository } from './adapters/sqlite/scrimsRepo.js'
 import { SqliteTeamRepository } from './adapters/sqlite/teamRepo.js'
 import { loadEnv } from './config/env.js'
 import { makeIngestMatchHandler } from './jobs/ingestMatch.js'
@@ -26,12 +28,22 @@ const teamRepo = new SqliteTeamRepository(db)
 const playerRepo = new SqlitePlayerRepository(db)
 const matchRepo = new SqliteMatchRepository(db)
 const jobRepo = new SqliteJobRepository(db)
+const matchNightsRepo = new SqliteMatchNightsRepository(db)
+const scrimRepo = new SqliteScrimsRepository(db)
 const provider = new HenrikClient({ apiKey: env.HENRIK_API_KEY })
 
 const client = createDiscordClient()
 const announcer = new DiscordMatchAnnouncer(client)
 
-const cmdDeps: CommandDeps = { teamRepo, playerRepo, matchRepo, jobRepo, provider }
+const cmdDeps: CommandDeps = {
+  teamRepo,
+  playerRepo,
+  matchRepo,
+  jobRepo,
+  matchNightsRepo,
+  scrimRepo,
+  provider,
+}
 const registry = buildRegistry(allCommands(cmdDeps))
 
 const handlers = new Map([

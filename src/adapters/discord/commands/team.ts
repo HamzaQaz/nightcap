@@ -1,10 +1,28 @@
 import { SlashCommandBuilder } from 'discord.js'
 import { setTeamConfig } from '../../../app/setTeamConfig.js'
-import { isErr } from '../../../domain/result.js'
-import type { TeamRepository } from '../../../ports/repositories.js'
+import { isErr, isOk } from '../../../domain/result.js'
+import type {
+  MatchNightsRepository,
+  TeamRepository,
+} from '../../../ports/repositories.js'
 import type { SlashCommand } from '../command.js'
 
-export const teamCommand = (teamRepo: TeamRepository): SlashCommand => ({
+const WEEKDAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+const WEEKDAY_CHOICES = [
+  { name: 'Sunday', value: 0 },
+  { name: 'Monday', value: 1 },
+  { name: 'Tuesday', value: 2 },
+  { name: 'Wednesday', value: 3 },
+  { name: 'Thursday', value: 4 },
+  { name: 'Friday', value: 5 },
+  { name: 'Saturday', value: 6 },
+]
+
+export const teamCommand = (
+  teamRepo: TeamRepository,
+  matchNightsRepo: MatchNightsRepository,
+): SlashCommand => ({
   data: new SlashCommandBuilder()
     .setName('team')
     .setDescription('Manage team configuration (captain only).')
@@ -38,11 +56,101 @@ export const teamCommand = (teamRepo: TeamRepository): SlashCommand => ({
     )
     .addSubcommand((s) =>
       s.setName('show').setDescription('Show the current team configuration.'),
+    )
+    .addSubcommandGroup((g) =>
+      g
+        .setName('match-nights')
+        .setDescription('Configure which weekdays the team plays Premier.')
+        .addSubcommand((s) =>
+          s
+            .setName('add')
+            .setDescription('Add or update a match night for the team.')
+            .addIntegerOption((o) =>
+              o
+                .setName('weekday')
+                .setDescription('Which weekday')
+                .setRequired(true)
+                .addChoices(...WEEKDAY_CHOICES),
+            )
+            .addIntegerOption((o) =>
+              o
+                .setName('preference-order')
+                .setDescription('1=primary, 2=fallback, 3=...')
+                .setMinValue(1)
+                .setMaxValue(7),
+            ),
+        )
+        .addSubcommand((s) =>
+          s
+            .setName('remove')
+            .setDescription('Remove a match night.')
+            .addIntegerOption((o) =>
+              o
+                .setName('weekday')
+                .setDescription('Which weekday to remove')
+                .setRequired(true)
+                .addChoices(...WEEKDAY_CHOICES),
+            ),
+        )
+        .addSubcommand((s) =>
+          s.setName('list').setDescription('List configured match nights.'),
+        ),
     ) as unknown as SlashCommandBuilder,
   permission: 'captain',
   execute: async (interaction) => {
     if (!interaction.guildId) return
     const sub = interaction.options.getSubcommand()
+
+    const group = interaction.options.getSubcommandGroup(false)
+    if (group === 'match-nights') {
+      if (sub === 'add') {
+        const weekday = interaction.options.getInteger('weekday', true)
+        const order = interaction.options.getInteger('preference-order') ?? 1
+        const r = matchNightsRepo.upsert({
+          guildId: interaction.guildId,
+          weekday,
+          preferenceOrder: order,
+        })
+        await interaction.reply({
+          ephemeral: true,
+          content: isOk(r)
+            ? `Match night set: ${WEEKDAY_NAMES[weekday]} (preference ${order}).`
+            : 'Failed to set match night.',
+        })
+        return
+      }
+      if (sub === 'remove') {
+        const weekday = interaction.options.getInteger('weekday', true)
+        const r = matchNightsRepo.remove(interaction.guildId, weekday)
+        await interaction.reply({
+          ephemeral: true,
+          content: isOk(r)
+            ? `Match night removed: ${WEEKDAY_NAMES[weekday]}.`
+            : 'Failed to remove match night.',
+        })
+        return
+      }
+      if (sub === 'list') {
+        const list = matchNightsRepo.listByGuild(interaction.guildId)
+        if (isErr(list)) {
+          await interaction.reply({ ephemeral: true, content: 'Failed to list match nights.' })
+          return
+        }
+        if (list.value.length === 0) {
+          await interaction.reply({
+            ephemeral: true,
+            content:
+              'No match nights configured. Default ladder is SAT (1) → SUN (2). Use `/team match-nights add` to override.',
+          })
+          return
+        }
+        const lines = list.value.map(
+          (n) => `${n.preferenceOrder}. ${WEEKDAY_NAMES[n.weekday]}`,
+        )
+        await interaction.reply({ ephemeral: true, content: lines.join('\n') })
+        return
+      }
+    }
 
     if (sub === 'show') {
       const t = teamRepo.findByGuild(interaction.guildId)
