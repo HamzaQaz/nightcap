@@ -1,0 +1,49 @@
+{
+  "status": 200,
+  "data": {
+    "metadata": {
+      "match_id": "M-123",
+      "started_at": "2026-04-30T22:00:00.000Z",
+      "map": { "name": "Ascent" },
+      "season": { "id": "S-2026-A2" }
+    },
+    "players": [
+      {
+        "puuid": "PUUID-CAPTAIN",
+        "name": "Captain",
+        "tag": "NA1",
+        "team_id": "Red",
+        "agent": { "name": "Omen" },
+        "stats": {
+          "kills": 18,
+          "deaths": 12,
+          "assists": 7,
+          "headshots": 24,
+          "bodyshots": 32,
+          "legshots": 4,
+          "damage": { "dealt": 3120 }
+        }
+      },
+      {
+        "puuid": "PUUID-OPPONENT",
+        "name": "Foe",
+        "tag": "NA1",
+        "team_id": "Blue",
+        "agent": { "name": "Jett" },
+        "stats": {
+          "kills": 14,
+          "deaths": 14,
+          "assists": 3,
+          "headshots": 18,
+          "bodyshots": 30,
+          "legshots": 2,
+          "damage": { "dealt": 2600 }
+        }
+      }
+    ],
+    "teams": [
+      { "team_id": "Red", "won": true, "rounds": { "won": 13 } },
+      { "team_id": "Blue", "won": false, "rounds": { "won": 7 } }
+    ]
+  }
+}
