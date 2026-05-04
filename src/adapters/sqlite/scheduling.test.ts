@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { isOk } from '../../domain/result.js'
 import { openDb } from './db.js'
-import { SqliteMatchNightsRepository } from './matchNightsRepo.js'
 import {
   SqliteMatchNightPollsRepository,
   SqlitePollRsvpsRepository,
 } from './matchNightPollsRepo.js'
+import { SqliteMatchNightsRepository } from './matchNightsRepo.js'
 import { SqliteRsvpsRepository } from './rsvpsRepo.js'
 import { SqliteScrimsRepository } from './scrimsRepo.js'
 

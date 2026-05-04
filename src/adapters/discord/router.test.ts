@@ -5,7 +5,12 @@ import type { CommandContext, SlashCommand } from './command.js'
 import { buildRegistry } from './registry.js'
 import { routeInteraction } from './router.js'
 
-const noopLogger = { info: () => {}, warn: () => {}, error: () => {}, debug: () => {} } as unknown as Logger
+const noopLogger = {
+  info: () => {},
+  warn: () => {},
+  error: () => {},
+  debug: () => {},
+} as unknown as Logger
 
 const okTeamRepo = {
   findByGuild: () => ({ _tag: 'ok' as const, value: null }),

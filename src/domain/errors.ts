@@ -14,12 +14,7 @@ export type ProviderError = {
 
 export type DomainError = NotFound | Validation | Conflict | ProviderError
 
-const TAGS = new Set<DomainError['tag']>([
-  'not_found',
-  'validation',
-  'conflict',
-  'provider_error',
-])
+const TAGS = new Set<DomainError['tag']>(['not_found', 'validation', 'conflict', 'provider_error'])
 
 export const notFound = (entity: string, id: string): NotFound => ({
   tag: 'not_found',

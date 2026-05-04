@@ -1,10 +1,7 @@
 import { SlashCommandBuilder } from 'discord.js'
 import { setTeamConfig } from '../../../app/setTeamConfig.js'
 import { isErr, isOk } from '../../../domain/result.js'
-import type {
-  MatchNightsRepository,
-  TeamRepository,
-} from '../../../ports/repositories.js'
+import type { MatchNightsRepository, TeamRepository } from '../../../ports/repositories.js'
 import type { SlashCommand } from '../command.js'
 
 const WEEKDAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -44,9 +41,7 @@ export const teamCommand = (
               { name: 'channel', value: 'channel' },
             ),
         )
-        .addStringOption((o) =>
-          o.setName('string-value').setDescription('Plain string value.'),
-        )
+        .addStringOption((o) => o.setName('string-value').setDescription('Plain string value.'))
         .addRoleOption((o) =>
           o.setName('role-value').setDescription('Role value (for role fields).'),
         )
@@ -54,9 +49,7 @@ export const teamCommand = (
           o.setName('channel-value').setDescription('Channel value (for channel field).'),
         ),
     )
-    .addSubcommand((s) =>
-      s.setName('show').setDescription('Show the current team configuration.'),
-    )
+    .addSubcommand((s) => s.setName('show').setDescription('Show the current team configuration.'))
     .addSubcommandGroup((g) =>
       g
         .setName('match-nights')
@@ -92,9 +85,7 @@ export const teamCommand = (
                 .addChoices(...WEEKDAY_CHOICES),
             ),
         )
-        .addSubcommand((s) =>
-          s.setName('list').setDescription('List configured match nights.'),
-        ),
+        .addSubcommand((s) => s.setName('list').setDescription('List configured match nights.')),
     ) as unknown as SlashCommandBuilder,
   permission: 'captain',
   execute: async (interaction) => {
@@ -144,9 +135,7 @@ export const teamCommand = (
           })
           return
         }
-        const lines = list.value.map(
-          (n) => `${n.preferenceOrder}. ${WEEKDAY_NAMES[n.weekday]}`,
-        )
+        const lines = list.value.map((n) => `${n.preferenceOrder}. ${WEEKDAY_NAMES[n.weekday]}`)
         await interaction.reply({ ephemeral: true, content: lines.join('\n') })
         return
       }
@@ -232,8 +221,7 @@ export const teamCommand = (
 
     const r = setTeamConfig(teamRepo, input)
     if (isErr(r)) {
-      const msg =
-        r.error.tag === 'validation' ? `Invalid: ${r.error.message}` : 'Failed to update.'
+      const msg = r.error.tag === 'validation' ? `Invalid: ${r.error.message}` : 'Failed to update.'
       await interaction.reply({ ephemeral: true, content: msg })
       return
     }

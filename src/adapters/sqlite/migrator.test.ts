@@ -28,9 +28,7 @@ describe('runMigrations', () => {
   it('skips already-applied migrations', () => {
     runMigrations(db, [{ id: '001_a', sql: 'CREATE TABLE a (id INTEGER)' }])
     runMigrations(db, [{ id: '001_a', sql: 'CREATE TABLE a (id INTEGER)' }])
-    const count = db
-      .prepare('SELECT COUNT(*) as c FROM schema_migrations')
-      .get() as { c: number }
+    const count = db.prepare('SELECT COUNT(*) as c FROM schema_migrations').get() as { c: number }
     expect(count.c).toBe(1)
   })
 })

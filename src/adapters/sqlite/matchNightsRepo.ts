@@ -1,6 +1,6 @@
 import type { DomainError } from '../../domain/errors.js'
 import { providerError } from '../../domain/errors.js'
-import { type Result, err, ok } from '../../domain/result.js'
+import { err, ok, type Result } from '../../domain/result.js'
 import type { MatchNight, MatchNightsRepository } from '../../ports/repositories.js'
 import type { Db } from './db.js'
 

@@ -1,9 +1,9 @@
-import { isErr } from '../domain/result.js'
 import {
   type SummarizeDeps,
   summarizeMatchForPlayer,
   summarizeMatchForTeam,
 } from '../app/summarizeMatch.js'
+import { isErr } from '../domain/result.js'
 import type { JobHandler } from './worker.js'
 
 export type SummarizePlayerJobPayload = {

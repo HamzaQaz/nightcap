@@ -1,21 +1,21 @@
+import type { DomainError } from '../domain/errors.js'
+import { notFound, validation } from '../domain/errors.js'
+import { err, isErr, ok, type Result } from '../domain/result.js'
+import type { Logger } from '../lib/logger.js'
 import type { AICoach, PlayerCoaching, PlayerRole, TeamCoaching } from '../ports/aiCoach.js'
 import { playerCoachingSchema, teamCoachingSchema } from '../ports/aiCoach.js'
 import type { CoachingAnnouncer } from '../ports/coachingAnnouncer.js'
-import type { Logger } from '../lib/logger.js'
 import type {
   AISummariesRepository,
   MatchRepository,
   PlayerRepository,
   TeamRepository,
 } from '../ports/repositories.js'
-import type { DomainError } from '../domain/errors.js'
-import { notFound, validation } from '../domain/errors.js'
-import { type Result, err, isErr, ok } from '../domain/result.js'
 import {
-  PRE_ROLE_PUBLIC_NOTE,
   formatPlayerPrivate,
   formatPlayerPublic,
   formatTeam,
+  PRE_ROLE_PUBLIC_NOTE,
 } from './coachingFormat.js'
 
 export const TEAM_PUUID = 'team'
@@ -91,8 +91,7 @@ export const summarizeMatchForPlayer = async (
   if (isErr(match)) return match
   if (!match.value) return err(notFound('match', input.matchId))
   const threadId = match.value.threadId
-  if (!threadId)
-    return err(validation('thread', 'match has no thread; cannot post coaching'))
+  if (!threadId) return err(validation('thread', 'match has no thread; cannot post coaching'))
 
   const player = deps.playerRepo.findByPuuid(input.guildId, input.playerPuuid)
   if (isErr(player)) return player
@@ -175,8 +174,7 @@ export const summarizeMatchForTeam = async (
   if (isErr(match)) return match
   if (!match.value) return err(notFound('match', input.matchId))
   const threadId = match.value.threadId
-  if (!threadId)
-    return err(validation('thread', 'match has no thread; cannot post team coaching'))
+  if (!threadId) return err(validation('thread', 'match has no thread; cannot post team coaching'))
 
   let coaching: TeamCoaching | null = null
   let cached = false

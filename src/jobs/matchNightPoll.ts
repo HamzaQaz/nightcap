@@ -1,10 +1,7 @@
-import { closeMatchNightPoll, type CloseMatchNightPollDeps } from '../app/closeMatchNightPoll.js'
-import { openMatchNightPoll, type OpenMatchNightPollDeps } from '../app/openMatchNightPoll.js'
+import { type CloseMatchNightPollDeps, closeMatchNightPoll } from '../app/closeMatchNightPoll.js'
+import { type OpenMatchNightPollDeps, openMatchNightPoll } from '../app/openMatchNightPoll.js'
 import { isErr } from '../domain/result.js'
-import type {
-  JobRepository,
-  MatchNightPollsRepository,
-} from '../ports/repositories.js'
+import type { JobRepository, MatchNightPollsRepository } from '../ports/repositories.js'
 import { CLOSE_MATCH_NIGHT_POLL_JOB } from './jobKinds.js'
 import type { JobHandler } from './worker.js'
 

@@ -8,11 +8,12 @@ export const runMigrations = (db: Database.Database, migrations: Migration[]): v
     applied_at INTEGER NOT NULL
   )`)
   const applied = new Set(
-    db.prepare('SELECT id FROM schema_migrations').all().map((r) => (r as { id: string }).id),
+    db
+      .prepare('SELECT id FROM schema_migrations')
+      .all()
+      .map((r) => (r as { id: string }).id),
   )
-  const insert = db.prepare(
-    'INSERT INTO schema_migrations (id, applied_at) VALUES (?, ?)',
-  )
+  const insert = db.prepare('INSERT INTO schema_migrations (id, applied_at) VALUES (?, ?)')
   const tx = db.transaction((m: Migration) => {
     db.exec(m.sql)
     insert.run(m.id, Date.now())

@@ -1,6 +1,6 @@
 import type { DomainError } from '../../domain/errors.js'
 import { providerError } from '../../domain/errors.js'
-import { type Result, err, ok } from '../../domain/result.js'
+import { err, ok, type Result } from '../../domain/result.js'
 import { fetchJson } from '../../lib/http.js'
 import type {
   MatchDataProvider,
@@ -44,10 +44,7 @@ export class HenrikClient implements MatchDataProvider {
     this.now = opts.now ?? (() => Date.now())
   }
 
-  async resolveAccount(
-    name: string,
-    tag: string,
-  ): Promise<Result<ResolvedAccount, DomainError>> {
+  async resolveAccount(name: string, tag: string): Promise<Result<ResolvedAccount, DomainError>> {
     const url = `${this.base}/v1/account/${encodeURIComponent(name)}/${encodeURIComponent(tag)}`
     const resp = await fetchJson(url, { headers: this.headers })
     if (resp.status === 404) return err(providerError('henrik', 'unknown', 'account not found'))
@@ -55,8 +52,7 @@ export class HenrikClient implements MatchDataProvider {
     if (resp.status >= 400)
       return err(providerError('henrik', 'unavailable', `status=${resp.status}`))
     const parsed = HenrikAccount.safeParse(resp.json)
-    if (!parsed.success)
-      return err(providerError('henrik', 'bad_response', parsed.error.message))
+    if (!parsed.success) return err(providerError('henrik', 'bad_response', parsed.error.message))
     return ok({ puuid: parsed.data.data.puuid, region: parsed.data.data.region })
   }
 
@@ -70,8 +66,7 @@ export class HenrikClient implements MatchDataProvider {
     if (resp.status >= 400)
       return err(providerError('henrik', 'unavailable', `status=${resp.status}`))
     const parsed = HenrikPremierHistory.safeParse(resp.json)
-    if (!parsed.success)
-      return err(providerError('henrik', 'bad_response', parsed.error.message))
+    if (!parsed.success) return err(providerError('henrik', 'bad_response', parsed.error.message))
     return ok(
       parsed.data.data.matches.map((m) => ({
         matchId: m.id,
@@ -92,8 +87,7 @@ export class HenrikClient implements MatchDataProvider {
     if (resp.status >= 400)
       return err(providerError('henrik', 'unavailable', `status=${resp.status}`))
     const parsed = HenrikMatchDetail.safeParse(resp.json)
-    if (!parsed.success)
-      return err(providerError('henrik', 'bad_response', parsed.error.message))
+    if (!parsed.success) return err(providerError('henrik', 'bad_response', parsed.error.message))
     return ok(toMatchDetail(parsed.data, new Set(teamPuuids)))
   }
 
@@ -115,8 +109,7 @@ export class HenrikClient implements MatchDataProvider {
       if (resp.status >= 400)
         return err(providerError('henrik', 'unavailable', `status=${resp.status}`))
       const parsed = HenrikSeasonsResponse.safeParse(resp.json)
-      if (!parsed.success)
-        return err(providerError('henrik', 'bad_response', parsed.error.message))
+      if (!parsed.success) return err(providerError('henrik', 'bad_response', parsed.error.message))
       data = parsed.data
       this.scheduleCache.set(cacheKey, { fetchedAt: now, data })
     }
@@ -124,10 +117,7 @@ export class HenrikClient implements MatchDataProvider {
   }
 }
 
-const toMatchDetail = (
-  raw: HenrikMatchDetailType,
-  ourPuuids: Set<string>,
-): MatchDetail => {
+const toMatchDetail = (raw: HenrikMatchDetailType, ourPuuids: Set<string>): MatchDetail => {
   const ourTeamId =
     raw.data.players.find((p) => ourPuuids.has(p.puuid))?.team_id ??
     raw.data.teams[0]?.team_id ??
@@ -163,9 +153,7 @@ const toMatchDetail = (
     result,
     scoreUs: us?.rounds.won ?? 0,
     scoreThem: them?.rounds.won ?? 0,
-    ourPuuids: new Set(
-      raw.data.players.filter((p) => p.team_id === ourTeamId).map((p) => p.puuid),
-    ),
+    ourPuuids: new Set(raw.data.players.filter((p) => p.team_id === ourTeamId).map((p) => p.puuid)),
     scoreboard,
     raw,
   }

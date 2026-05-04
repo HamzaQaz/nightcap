@@ -20,9 +20,7 @@ describe('HenrikClient', () => {
   })
 
   it('resolves an account by name#tag', async () => {
-    globalThis.fetch = vi
-      .fn()
-      .mockResolvedValueOnce(new Response(accountFixture, { status: 200 }))
+    globalThis.fetch = vi.fn().mockResolvedValueOnce(new Response(accountFixture, { status: 200 }))
     const c = new HenrikClient({ apiKey: undefined })
     const r = await c.resolveAccount('Captain', 'NA1')
     if (isOk(r)) {
@@ -42,9 +40,7 @@ describe('HenrikClient', () => {
   })
 
   it('parses a match detail and computes scoreUs/scoreThem from team puuids', async () => {
-    globalThis.fetch = vi
-      .fn()
-      .mockResolvedValueOnce(new Response(matchFixture, { status: 200 }))
+    globalThis.fetch = vi.fn().mockResolvedValueOnce(new Response(matchFixture, { status: 200 }))
     const c = new HenrikClient({ apiKey: undefined })
     const r = await c.getMatchDetail('na', 'M-123', ['PUUID-CAPTAIN'])
     if (isOk(r)) {

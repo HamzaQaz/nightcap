@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  conflict,
-  isDomainError,
-  notFound,
-  providerError,
-  validation,
-} from './errors.js'
+import { conflict, isDomainError, notFound, providerError, validation } from './errors.js'
 
 describe('DomainError', () => {
   it('builds a not_found error', () => {

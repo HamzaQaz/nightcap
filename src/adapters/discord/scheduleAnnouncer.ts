@@ -4,18 +4,15 @@ import {
   ButtonStyle,
   ChannelType,
   type Client,
-  type EmbedBuilder,
   EmbedBuilder as Embed,
+  type EmbedBuilder,
   type TextChannel,
 } from 'discord.js'
+import { WEEKDAY_NAMES } from '../../app/matchNightLadder.js'
 import type { DomainError } from '../../domain/errors.js'
 import { providerError } from '../../domain/errors.js'
-import { type Result, err, ok } from '../../domain/result.js'
-import type {
-  MatchNightPollPostOpts,
-  ScheduleAnnouncer,
-} from '../../ports/scheduleAnnouncer.js'
-import { WEEKDAY_NAMES } from '../../app/matchNightLadder.js'
+import { err, ok, type Result } from '../../domain/result.js'
+import type { MatchNightPollPostOpts, ScheduleAnnouncer } from '../../ports/scheduleAnnouncer.js'
 
 export const POLL_BUTTON_PREFIX = 'mnpoll'
 
@@ -72,10 +69,7 @@ export class DiscordScheduleAnnouncer implements ScheduleAnnouncer {
     }
   }
 
-  async postSkipWeek(
-    channelId: string,
-    content: string,
-  ): Promise<Result<void, DomainError>> {
+  async postSkipWeek(channelId: string, content: string): Promise<Result<void, DomainError>> {
     return this.postPlainAnnouncement(channelId, content)
   }
 
@@ -107,9 +101,7 @@ export class DiscordScheduleAnnouncer implements ScheduleAnnouncer {
       const text = channel as TextChannel
       const message = await text.messages.fetch(messageId)
       const original = message.embeds[0]
-      const e = original
-        ? Embed.from(original)
-        : new Embed().setTitle('Match-night poll')
+      const e = original ? Embed.from(original) : new Embed().setTitle('Match-night poll')
       e.spliceFields(0, e.data.fields?.length ?? 0, {
         name: 'RSVPs',
         value: `${yesCount} ✅ / quorum ${quorum}${closed ? ' — closed' : ''}`,

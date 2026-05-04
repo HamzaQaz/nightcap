@@ -1,6 +1,6 @@
 import type { DomainError } from '../../domain/errors.js'
 import { providerError } from '../../domain/errors.js'
-import { type Result, err, ok } from '../../domain/result.js'
+import { err, ok, type Result } from '../../domain/result.js'
 import type {
   MatchNightPollRecord,
   MatchNightPollsRepository,
@@ -86,9 +86,7 @@ export class SqliteMatchNightPollsRepository implements MatchNightPollsRepositor
 
   setMessageId(id: number, messageId: string): Result<void, DomainError> {
     return wrap(() => {
-      this.db
-        .prepare('UPDATE match_night_polls SET message_id = ? WHERE id = ?')
-        .run(messageId, id)
+      this.db.prepare('UPDATE match_night_polls SET message_id = ? WHERE id = ?').run(messageId, id)
     })
   }
 

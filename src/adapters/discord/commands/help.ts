@@ -11,15 +11,25 @@ export const helpCommand: SlashCommand = {
       ephemeral: true,
       content:
         '**premier-bot commands**\n' +
-        '`/team set` — captain configures region, roles, channel, henrik team id\n' +
-        '`/team show` — show current team config\n' +
-        '`/link <RiotName#TAG>` — link your Riot account (member only)\n' +
-        '`/unlink` — unlink your account\n' +
-        '`/roster add @user RiotName#TAG [role]` — captain-only\n' +
-        '`/roster remove @user` — captain-only\n' +
-        '`/roster set-role @user <role>` — captain-only\n' +
-        '`/match latest` — re-pull and post the most recent match\n' +
-        '`/match link <id-or-url>` — manually ingest a match (e.g., a scrim)',
+        '__Team setup (captain)__\n' +
+        '`/team set` — region, conference, roles, channel, henrik-team-id\n' +
+        '`/team show`\n' +
+        '`/team match-nights add|remove|list` — set primary/fallback match nights\n' +
+        '__Roster__\n' +
+        '`/link <RiotName#TAG>` (member self-service)\n' +
+        '`/unlink`\n' +
+        '`/roster add|remove|set-role` (captain)\n' +
+        '__Matches__\n' +
+        '`/match latest` — re-post the most recent match\n' +
+        '`/match link <id-or-url>` — manually ingest\n' +
+        '`/match coach @player <match-id>` — re-run AI coaching for a player\n' +
+        '__Scheduling__\n' +
+        '`/scrim propose <date> <time> [note]` — Date `YYYY-MM-DD`, time `HH:MM`\n' +
+        '`/scrim list`, `/scrim cancel <id>` (captain)\n' +
+        '__VOD review__\n' +
+        '`/vod add <url> [match-id]`, `/vod note <vod-id> <mm:ss> [@player] <text>`, `/vod list`\n' +
+        '__Stats__\n' +
+        '`/stats season` — current Premier season W-L, ADR, HS%, top agents, map win-rate',
     })
   },
 }

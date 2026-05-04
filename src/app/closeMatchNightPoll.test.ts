@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
 import { isOk, ok } from '../domain/result.js'
-import type { ScheduleAnnouncer } from '../ports/scheduleAnnouncer.js'
+import {
+  CLOSE_MATCH_NIGHT_POLL_JOB,
+  OPEN_MATCH_NIGHT_POLL_JOB,
+  SEND_REMINDER_JOB,
+} from '../jobs/jobKinds.js'
 import type {
   JobRepository,
   MatchNightPollRecord,
@@ -9,12 +13,8 @@ import type {
   PollRsvpsRepository,
   TeamRepository,
 } from '../ports/repositories.js'
+import type { ScheduleAnnouncer } from '../ports/scheduleAnnouncer.js'
 import { closeMatchNightPoll } from './closeMatchNightPoll.js'
-import {
-  CLOSE_MATCH_NIGHT_POLL_JOB,
-  OPEN_MATCH_NIGHT_POLL_JOB,
-  SEND_REMINDER_JOB,
-} from '../jobs/jobKinds.js'
 
 void CLOSE_MATCH_NIGHT_POLL_JOB
 
@@ -113,9 +113,9 @@ describe('closeMatchNightPoll', () => {
     const deps = fakeDeps({
       rsvpsRepo: { countYes: vi.fn().mockReturnValue(ok(1)) } as unknown as PollRsvpsRepository,
       matchNightsRepo: {
-        listByGuild: vi.fn().mockReturnValue(
-          ok([{ guildId: 'g1', weekday: 6, preferenceOrder: 1 }]),
-        ),
+        listByGuild: vi
+          .fn()
+          .mockReturnValue(ok([{ guildId: 'g1', weekday: 6, preferenceOrder: 1 }])),
       } as unknown as MatchNightsRepository,
     })
     const r = await closeMatchNightPoll(deps, 1)

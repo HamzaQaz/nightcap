@@ -1,6 +1,6 @@
 import type { DomainError } from '../../domain/errors.js'
 import { providerError } from '../../domain/errors.js'
-import { type Result, err, ok } from '../../domain/result.js'
+import { err, ok, type Result } from '../../domain/result.js'
 import type { MatchRecord, MatchRepository } from '../../ports/repositories.js'
 import type { Db } from './db.js'
 
@@ -55,9 +55,7 @@ export class SqliteMatchRepository implements MatchRepository {
   findByMatchId(guildId: string, matchId: string): Result<MatchRecord | null, DomainError> {
     return wrap(() => {
       const row = this.db
-        .prepare<[string, string], Row>(
-          'SELECT * FROM matches WHERE guild_id = ? AND match_id = ?',
-        )
+        .prepare<[string, string], Row>('SELECT * FROM matches WHERE guild_id = ? AND match_id = ?')
         .get(guildId, matchId)
       return row ? toRecord(row) : null
     })

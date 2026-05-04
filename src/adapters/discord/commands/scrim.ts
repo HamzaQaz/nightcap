@@ -12,9 +12,7 @@ export const scrimCommand = (scrimRepo: ScrimsRepository): SlashCommand => ({
       s
         .setName('propose')
         .setDescription('Propose a new scrim.')
-        .addStringOption((o) =>
-          o.setName('date').setDescription('YYYY-MM-DD').setRequired(true),
-        )
+        .addStringOption((o) => o.setName('date').setDescription('YYYY-MM-DD').setRequired(true))
         .addStringOption((o) =>
           o.setName('time').setDescription('HH:MM (24h, server local time)').setRequired(true),
         )
@@ -24,9 +22,7 @@ export const scrimCommand = (scrimRepo: ScrimsRepository): SlashCommand => ({
       s
         .setName('cancel')
         .setDescription('Cancel a scrim by id (captain).')
-        .addIntegerOption((o) =>
-          o.setName('id').setDescription('Scrim id').setRequired(true),
-        ),
+        .addIntegerOption((o) => o.setName('id').setDescription('Scrim id').setRequired(true)),
     )
     .addSubcommand((s) =>
       s.setName('list').setDescription('List open scrims.'),

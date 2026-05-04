@@ -1,7 +1,8 @@
+import { buildMatchEmbed } from '../adapters/discord/embeds/matchEmbed.js'
 import type { DomainError } from '../domain/errors.js'
 import { notFound, validation } from '../domain/errors.js'
-import { type Result, err, isErr, ok } from '../domain/result.js'
-import { buildMatchEmbed } from '../adapters/discord/embeds/matchEmbed.js'
+import { err, isErr, ok, type Result } from '../domain/result.js'
+import { SUMMARIZE_MATCH_JOB } from '../jobs/summarizeMatch.js'
 import type { MatchAnnouncer } from '../ports/announcer.js'
 import type { MatchDataProvider } from '../ports/matchData.js'
 import type {
@@ -10,7 +11,6 @@ import type {
   PlayerRepository,
   TeamRepository,
 } from '../ports/repositories.js'
-import { SUMMARIZE_MATCH_JOB } from '../jobs/summarizeMatch.js'
 
 export type IngestMatchDeps = {
   teamRepo: TeamRepository
@@ -42,11 +42,7 @@ export const ingestMatch = async (
   if (isErr(players)) return players
   const teamPuuids = players.value.map((p) => p.puuid)
 
-  const detail = await deps.provider.getMatchDetail(
-    team.value.region,
-    input.matchId,
-    teamPuuids,
-  )
+  const detail = await deps.provider.getMatchDetail(team.value.region, input.matchId, teamPuuids)
   if (isErr(detail)) return detail
 
   const insertResult = deps.matchRepo.insert({

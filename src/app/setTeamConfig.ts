@@ -1,6 +1,6 @@
 import type { DomainError } from '../domain/errors.js'
 import { validation } from '../domain/errors.js'
-import { type Result, err, isErr } from '../domain/result.js'
+import { err, isErr, type Result } from '../domain/result.js'
 import type { TeamRecord, TeamRepository } from '../ports/repositories.js'
 
 const REGIONS = new Set(['na', 'eu', 'ap', 'kr', 'latam', 'br'])

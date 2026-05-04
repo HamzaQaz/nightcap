@@ -1,4 +1,4 @@
-import { type Result, err, ok } from '../domain/result.js'
+import { err, ok, type Result } from '../domain/result.js'
 
 const MM_SS = /^(\d{1,3}):(\d{2})$/
 const H_MM_SS = /^(\d{1,3}):(\d{2}):(\d{2})$/
@@ -27,7 +27,6 @@ export const formatVodTimestamp = (totalSeconds: number): string => {
   const h = Math.floor(totalSeconds / 3600)
   const m = Math.floor((totalSeconds % 3600) / 60)
   const s = totalSeconds % 60
-  if (h > 0)
-    return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+  if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
   return `${m}:${String(s).padStart(2, '0')}`
 }

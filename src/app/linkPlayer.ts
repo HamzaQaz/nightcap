@@ -1,13 +1,12 @@
 import type { DomainError } from '../domain/errors.js'
 import { validation } from '../domain/errors.js'
-import { type Result, err, isErr, ok } from '../domain/result.js'
+import { err, isErr, ok, type Result } from '../domain/result.js'
 import type { MatchDataProvider } from '../ports/matchData.js'
 import type { PlayerRecord, PlayerRepository } from '../ports/repositories.js'
 
 export const parseRiotTag = (raw: string): Result<{ name: string; tag: string }, DomainError> => {
   const idx = raw.indexOf('#')
-  if (idx <= 0 || idx === raw.length - 1)
-    return err(validation('riot_tag', 'expected Name#TAG'))
+  if (idx <= 0 || idx === raw.length - 1) return err(validation('riot_tag', 'expected Name#TAG'))
   return ok({ name: raw.slice(0, idx), tag: raw.slice(idx + 1) })
 }
 

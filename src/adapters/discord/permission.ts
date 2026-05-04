@@ -7,10 +7,7 @@ export type PermissionContext = {
   isAdmin: boolean
 }
 
-export const canRunCommand = (
-  required: CommandPermission,
-  ctx: PermissionContext,
-): boolean => {
+export const canRunCommand = (required: CommandPermission, ctx: PermissionContext): boolean => {
   if (required === 'anyone') return true
   if (ctx.isAdmin) return true
   if (!ctx.team) return false
@@ -18,10 +15,7 @@ export const canRunCommand = (
     return ctx.team.captainRoleId !== null && ctx.userRoleIds.includes(ctx.team.captainRoleId)
   }
   // member: captain-role users implicitly count as members
-  if (
-    ctx.team.captainRoleId !== null &&
-    ctx.userRoleIds.includes(ctx.team.captainRoleId)
-  )
+  if (ctx.team.captainRoleId !== null && ctx.userRoleIds.includes(ctx.team.captainRoleId))
     return true
   return ctx.team.memberRoleId !== null && ctx.userRoleIds.includes(ctx.team.memberRoleId)
 }

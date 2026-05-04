@@ -2,8 +2,8 @@ import { readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { HenrikSeasonsResponse } from './schemas.js'
 import { resolveSchedule } from './schedule.js'
+import { HenrikSeasonsResponse } from './schemas.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const root = resolve(here, '../../..')

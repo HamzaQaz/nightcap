@@ -1,7 +1,7 @@
 import { ChannelType, type Client, type ThreadChannel } from 'discord.js'
 import type { DomainError } from '../../domain/errors.js'
 import { providerError } from '../../domain/errors.js'
-import { type Result, err, ok } from '../../domain/result.js'
+import { err, ok, type Result } from '../../domain/result.js'
 import type { CoachingAnnouncer, DmFailure } from '../../ports/coachingAnnouncer.js'
 
 const DM_DISABLED_CODE = 50007

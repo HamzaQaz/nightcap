@@ -1,6 +1,6 @@
 import type { DomainError } from '../domain/errors.js'
-import { type Result, err, isErr, ok } from '../domain/result.js'
 import { providerError } from '../domain/errors.js'
+import { err, isErr, ok, type Result } from '../domain/result.js'
 import type {
   MatchRecord,
   MatchRepository,
@@ -114,8 +114,7 @@ const buildStats = (
   const perMapMap = new Map<string, MapSeasonStat>()
   for (const m of matches) {
     const key = m.map ?? 'unknown'
-    const cur =
-      perMapMap.get(key) ?? { map: key, wins: 0, losses: 0, draws: 0 }
+    const cur = perMapMap.get(key) ?? { map: key, wins: 0, losses: 0, draws: 0 }
     if (m.result === 'win') cur.wins++
     else if (m.result === 'loss') cur.losses++
     else if (m.result === 'draw') cur.draws++

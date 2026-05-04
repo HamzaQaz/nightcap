@@ -1,6 +1,7 @@
 import type { DomainError } from '../domain/errors.js'
 import { notFound, validation } from '../domain/errors.js'
-import { type Result, err, isErr, ok } from '../domain/result.js'
+import { err, isErr, ok, type Result } from '../domain/result.js'
+import { OPEN_MATCH_NIGHT_POLL_JOB, SEND_REMINDER_JOB } from '../jobs/jobKinds.js'
 import type {
   JobRepository,
   MatchNightPollsRepository,
@@ -9,9 +10,7 @@ import type {
   TeamRepository,
 } from '../ports/repositories.js'
 import type { ScheduleAnnouncer } from '../ports/scheduleAnnouncer.js'
-import { OPEN_MATCH_NIGHT_POLL_JOB } from '../jobs/jobKinds.js'
-import { SEND_REMINDER_JOB } from '../jobs/jobKinds.js'
-import { WEEKDAY_NAMES, nextOrder, resolveMatchNights } from './matchNightLadder.js'
+import { nextOrder, resolveMatchNights, WEEKDAY_NAMES } from './matchNightLadder.js'
 
 const REMINDER_OFFSETS_MS = [60 * 60 * 1000, 10 * 60 * 1000]
 
@@ -36,7 +35,8 @@ export const closeMatchNightPoll = async (
   const poll = deps.pollsRepo.findById(pollId)
   if (isErr(poll)) return poll
   if (!poll.value) return err(notFound('match_night_poll', String(pollId)))
-  if (poll.value.status !== 'open') return ok({ outcome: 'quorum_met', yesCount: poll.value.yesCount })
+  if (poll.value.status !== 'open')
+    return ok({ outcome: 'quorum_met', yesCount: poll.value.yesCount })
 
   const team = deps.teamRepo.findByGuild(poll.value.guildId)
   if (isErr(team)) return team
@@ -53,7 +53,13 @@ export const closeMatchNightPoll = async (
     deps.pollsRepo.setStatus(pollId, 'closed_quorum')
     deps.pollsRepo.setLadderDone(pollId, true)
     if (poll.value.messageId)
-      await deps.announcer.updatePollMessage(channelId, poll.value.messageId, yesCount, quorum, true)
+      await deps.announcer.updatePollMessage(
+        channelId,
+        poll.value.messageId,
+        yesCount,
+        quorum,
+        true,
+      )
     for (const offset of REMINDER_OFFSETS_MS) {
       const runAt = poll.value.matchStartAt - offset
       deps.jobRepo.enqueue(

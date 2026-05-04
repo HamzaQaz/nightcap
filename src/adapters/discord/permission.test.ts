@@ -23,27 +23,19 @@ describe('canRunCommand', () => {
   })
 
   it('allows captain-role users to run captain commands', () => {
-    expect(
-      canRunCommand('captain', { team, userRoleIds: ['r-cap'], isAdmin: false }),
-    ).toBe(true)
+    expect(canRunCommand('captain', { team, userRoleIds: ['r-cap'], isAdmin: false })).toBe(true)
   })
 
   it('rejects non-captain users from captain commands', () => {
-    expect(
-      canRunCommand('captain', { team, userRoleIds: ['r-mem'], isAdmin: false }),
-    ).toBe(false)
+    expect(canRunCommand('captain', { team, userRoleIds: ['r-mem'], isAdmin: false })).toBe(false)
   })
 
   it('allows member-role users to run member commands', () => {
-    expect(canRunCommand('member', { team, userRoleIds: ['r-mem'], isAdmin: false })).toBe(
-      true,
-    )
+    expect(canRunCommand('member', { team, userRoleIds: ['r-mem'], isAdmin: false })).toBe(true)
   })
 
   it('captain-role users can also run member commands', () => {
-    expect(canRunCommand('member', { team, userRoleIds: ['r-cap'], isAdmin: false })).toBe(
-      true,
-    )
+    expect(canRunCommand('member', { team, userRoleIds: ['r-cap'], isAdmin: false })).toBe(true)
   })
 
   it('rejects when team has no role configured and user is not admin', () => {

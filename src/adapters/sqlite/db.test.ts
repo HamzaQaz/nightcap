@@ -10,9 +10,9 @@ describe('openDb', () => {
 
   it('applies all migrations on open', () => {
     const db = openDb(':memory:')
-    const tables = db
-      .prepare("SELECT name FROM sqlite_master WHERE type='table'")
-      .all() as { name: string }[]
+    const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all() as {
+      name: string
+    }[]
     expect(tables.some((t) => t.name === 'teams')).toBe(true)
     db.close()
   })

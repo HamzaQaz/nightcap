@@ -1,6 +1,6 @@
 import type { DomainError } from '../../domain/errors.js'
 import { providerError } from '../../domain/errors.js'
-import { type Result, err, ok } from '../../domain/result.js'
+import { err, ok, type Result } from '../../domain/result.js'
 import type { TeamRecord, TeamRepository } from '../../ports/repositories.js'
 import type { Db } from './db.js'
 
@@ -46,9 +46,7 @@ export class SqliteTeamRepository implements TeamRepository {
     })
   }
 
-  upsert(
-    patch: Partial<TeamRecord> & { guildId: string },
-  ): Result<TeamRecord, DomainError> {
+  upsert(patch: Partial<TeamRecord> & { guildId: string }): Result<TeamRecord, DomainError> {
     return wrap(() => {
       const existing = this.db
         .prepare<[string], Row>('SELECT * FROM teams WHERE guild_id = ?')

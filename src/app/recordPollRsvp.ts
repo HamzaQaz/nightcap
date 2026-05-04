@@ -1,6 +1,6 @@
 import type { DomainError } from '../domain/errors.js'
 import { notFound, validation } from '../domain/errors.js'
-import { type Result, err, isErr, ok } from '../domain/result.js'
+import { err, isErr, ok, type Result } from '../domain/result.js'
 import type {
   MatchNightPollsRepository,
   PollRsvpsRepository,
@@ -31,8 +31,7 @@ export const recordPollRsvp = async (
   const poll = deps.pollsRepo.findById(input.pollId)
   if (isErr(poll)) return poll
   if (!poll.value) return err(notFound('match_night_poll', String(input.pollId)))
-  if (poll.value.status !== 'open')
-    return err(validation('poll', 'poll is closed'))
+  if (poll.value.status !== 'open') return err(validation('poll', 'poll is closed'))
 
   const team = deps.teamRepo.findByGuild(poll.value.guildId)
   if (isErr(team)) return team

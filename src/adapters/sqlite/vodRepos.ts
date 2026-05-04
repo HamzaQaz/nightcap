@@ -1,6 +1,6 @@
 import type { DomainError } from '../../domain/errors.js'
 import { providerError } from '../../domain/errors.js'
-import { type Result, err, ok } from '../../domain/result.js'
+import { err, ok, type Result } from '../../domain/result.js'
 import type {
   VodNoteRecord,
   VodNotesRepository,
@@ -118,14 +118,7 @@ export class SqliteVodNotesRepository implements VodNotesRepository {
           `INSERT INTO vod_notes (vod_id, timestamp_seconds, target_discord_id, author_discord_id, text, created_at)
            VALUES (?, ?, ?, ?, ?, ?)`,
         )
-        .run(
-          n.vodId,
-          n.timestampSeconds,
-          n.targetDiscordId,
-          n.authorDiscordId,
-          n.text,
-          n.createdAt,
-        )
+        .run(n.vodId, n.timestampSeconds, n.targetDiscordId, n.authorDiscordId, n.text, n.createdAt)
       return Number(info.lastInsertRowid)
     })
   }

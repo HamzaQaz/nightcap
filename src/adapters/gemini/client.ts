@@ -1,18 +1,18 @@
 import { GoogleGenAI } from '@google/genai'
 import type { DomainError } from '../../domain/errors.js'
 import { providerError } from '../../domain/errors.js'
-import { type Result, err, ok } from '../../domain/result.js'
+import { err, ok, type Result } from '../../domain/result.js'
 import {
   type AICoach,
   type AIResult,
   type CoachPlayerInput,
   type CoachTeamInput,
   type PlayerCoaching,
-  type TeamCoaching,
   playerCoachingSchema,
+  type TeamCoaching,
   teamCoachingSchema,
 } from '../../ports/aiCoach.js'
-import { PROMPT_VERSION, buildPlayerPrompt, buildTeamPrompt, hashPrompt } from './prompts.js'
+import { buildPlayerPrompt, buildTeamPrompt, hashPrompt, PROMPT_VERSION } from './prompts.js'
 import { PLAYER_RESPONSE_SCHEMA, TEAM_RESPONSE_SCHEMA } from './schemas.js'
 
 export type GenerateFn = (req: {
@@ -52,8 +52,7 @@ export class GeminiCoach implements AICoach {
     const json = safeParseJson(raw)
     if (!json) return err(providerError('gemini', 'bad_response', 'invalid JSON in response'))
     const parsed = playerCoachingSchema.safeParse(json)
-    if (!parsed.success)
-      return err(providerError('gemini', 'bad_response', parsed.error.message))
+    if (!parsed.success) return err(providerError('gemini', 'bad_response', parsed.error.message))
     return ok({ output: parsed.data, model: this.model, promptHash })
   }
 
@@ -72,8 +71,7 @@ export class GeminiCoach implements AICoach {
     const json = safeParseJson(raw)
     if (!json) return err(providerError('gemini', 'bad_response', 'invalid JSON in response'))
     const parsed = teamCoachingSchema.safeParse(json)
-    if (!parsed.success)
-      return err(providerError('gemini', 'bad_response', parsed.error.message))
+    if (!parsed.success) return err(providerError('gemini', 'bad_response', parsed.error.message))
     return ok({ output: parsed.data, model: this.model, promptHash })
   }
 }

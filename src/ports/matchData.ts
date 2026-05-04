@@ -46,10 +46,7 @@ export type UpcomingMatch = {
 
 export interface MatchDataProvider {
   resolveAccount(name: string, tag: string): Promise<Result<ResolvedAccount, DomainError>>
-  listRecentMatches(
-    region: string,
-    teamId: string,
-  ): Promise<Result<MatchSummary[], DomainError>>
+  listRecentMatches(region: string, teamId: string): Promise<Result<MatchSummary[], DomainError>>
   getMatchDetail(
     region: string,
     matchId: string,

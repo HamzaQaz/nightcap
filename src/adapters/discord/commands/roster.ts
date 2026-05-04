@@ -18,9 +18,7 @@ export const rosterCommand = (
         .setName('add')
         .setDescription('Add or update a player.')
         .addUserOption((o) => o.setName('user').setDescription('Discord user').setRequired(true))
-        .addStringOption((o) =>
-          o.setName('riot-id').setDescription('Name#TAG').setRequired(true),
-        )
+        .addStringOption((o) => o.setName('riot-id').setDescription('Name#TAG').setRequired(true))
         .addStringOption((o) =>
           o
             .setName('role')
@@ -37,7 +35,7 @@ export const rosterCommand = (
     .addSubcommand((s) =>
       s
         .setName('set-role')
-        .setDescription('Assign a player\'s in-game role.')
+        .setDescription("Assign a player's in-game role.")
         .addUserOption((o) => o.setName('user').setDescription('Discord user').setRequired(true))
         .addStringOption((o) =>
           o

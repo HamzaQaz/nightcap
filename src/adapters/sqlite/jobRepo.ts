@@ -1,6 +1,6 @@
 import type { DomainError } from '../../domain/errors.js'
 import { providerError } from '../../domain/errors.js'
-import { type Result, err, ok } from '../../domain/result.js'
+import { err, ok, type Result } from '../../domain/result.js'
 import type { JobRecord, JobRepository } from '../../ports/repositories.js'
 import type { Db } from './db.js'
 
@@ -81,9 +81,7 @@ export class SqliteJobRepository implements JobRepository {
           .run(error, id)
       } else {
         this.db
-          .prepare(
-            "UPDATE jobs SET status = 'pending', last_error = ?, run_at = ? WHERE id = ?",
-          )
+          .prepare("UPDATE jobs SET status = 'pending', last_error = ?, run_at = ? WHERE id = ?")
           .run(error, nextRunAt, id)
       }
     })

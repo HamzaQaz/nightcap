@@ -1,5 +1,5 @@
-import type { Result } from '../domain/result.js'
 import type { DomainError } from '../domain/errors.js'
+import type { Result } from '../domain/result.js'
 
 export type TeamRecord = {
   guildId: string

@@ -1,5 +1,5 @@
+import { type IngestMatchDeps, ingestMatch } from '../app/ingestMatch.js'
 import { isErr } from '../domain/result.js'
-import { ingestMatch, type IngestMatchDeps } from '../app/ingestMatch.js'
 import type { JobHandler } from './worker.js'
 
 export type IngestMatchJobPayload = { guildId: string; matchId: string }

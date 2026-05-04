@@ -1,12 +1,12 @@
 import { describe, expect, it, vi } from 'vitest'
 import { isErr, isOk, ok } from '../domain/result.js'
 import type { MatchDataProvider } from '../ports/matchData.js'
-import type { ScheduleAnnouncer } from '../ports/scheduleAnnouncer.js'
 import type {
   MatchNightPollsRepository,
   MatchNightsRepository,
   TeamRepository,
 } from '../ports/repositories.js'
+import type { ScheduleAnnouncer } from '../ports/scheduleAnnouncer.js'
 import { openMatchNightPoll } from './openMatchNightPoll.js'
 
 const team = {

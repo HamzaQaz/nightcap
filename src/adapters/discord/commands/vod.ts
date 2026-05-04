@@ -31,12 +31,8 @@ export const vodCommand = (
       s
         .setName('add')
         .setDescription('Add a VOD URL (and optionally link to a match).')
-        .addStringOption((o) =>
-          o.setName('url').setDescription('VOD URL').setRequired(true),
-        )
-        .addStringOption((o) =>
-          o.setName('match-id').setDescription('Optional Henrik match id'),
-        ),
+        .addStringOption((o) => o.setName('url').setDescription('VOD URL').setRequired(true))
+        .addStringOption((o) => o.setName('match-id').setDescription('Optional Henrik match id')),
     )
     .addSubcommand((s) =>
       s
@@ -48,15 +44,11 @@ export const vodCommand = (
         .addStringOption((o) =>
           o.setName('timestamp').setDescription('mm:ss or h:mm:ss').setRequired(true),
         )
-        .addStringOption((o) =>
-          o.setName('text').setDescription('Note text').setRequired(true),
-        )
+        .addStringOption((o) => o.setName('text').setDescription('Note text').setRequired(true))
         .addUserOption((o) => o.setName('player').setDescription('Player tagged in note')),
     )
     .addSubcommand((s) =>
-      s
-        .setName('list')
-        .setDescription('List recent VODs for this team.'),
+      s.setName('list').setDescription('List recent VODs for this team.'),
     ) as unknown as SlashCommandBuilder,
   permission: 'member',
   execute: async (interaction) => {
@@ -101,7 +93,9 @@ export const vodCommand = (
                 type: ChannelType.PublicThread,
               })
               threadId = thread.id
-              await thread.send({ content: `**VOD #${ins.value}** added by <@${interaction.user.id}>\n${url}` })
+              await thread.send({
+                content: `**VOD #${ins.value}** added by <@${interaction.user.id}>\n${url}`,
+              })
             }
           }
         }

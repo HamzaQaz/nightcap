@@ -1,4 +1,4 @@
-import { type Result, err, ok } from '../domain/result.js'
+import { err, ok, type Result } from '../domain/result.js'
 
 export type ParseDateTimeError = { tag: 'invalid_format' } | { tag: 'in_past' }
 

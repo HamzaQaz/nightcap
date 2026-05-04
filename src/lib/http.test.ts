@@ -12,9 +12,9 @@ describe('fetchJson', () => {
   })
 
   it('returns parsed JSON on 200', async () => {
-    globalThis.fetch = vi.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify({ ok: true }), { status: 200 }),
-    )
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ ok: true }), { status: 200 }))
     const r = await fetchJson('https://x', { headers: {} })
     expect(r.status).toBe(200)
     expect(r.json).toEqual({ ok: true })
@@ -34,9 +34,7 @@ describe('fetchJson', () => {
   })
 
   it('returns last response after exhausting retries', async () => {
-    globalThis.fetch = vi
-      .fn()
-      .mockResolvedValue(new Response('rate', { status: 429 }))
+    globalThis.fetch = vi.fn().mockResolvedValue(new Response('rate', { status: 429 }))
     const promise = fetchJson('https://x', { headers: {}, maxRetries: 2, baseDelayMs: 1 })
     await vi.runAllTimersAsync()
     const r = await promise

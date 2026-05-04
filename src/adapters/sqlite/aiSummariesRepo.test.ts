@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { isOk } from '../../domain/result.js'
-import { openDb } from './db.js'
 import { SqliteAISummariesRepository } from './aiSummariesRepo.js'
+import { openDb } from './db.js'
 
 const newRepo = () => new SqliteAISummariesRepository(openDb(':memory:'))
 

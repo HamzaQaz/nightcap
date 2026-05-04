@@ -1,13 +1,13 @@
 import type { DomainError } from '../domain/errors.js'
 import { conflict, notFound, validation } from '../domain/errors.js'
-import { type Result, err, isErr, ok } from '../domain/result.js'
+import { err, isErr, ok, type Result } from '../domain/result.js'
 import type { MatchDataProvider, UpcomingMatch } from '../ports/matchData.js'
-import type { ScheduleAnnouncer } from '../ports/scheduleAnnouncer.js'
 import type {
   MatchNightPollsRepository,
   MatchNightsRepository,
   TeamRepository,
 } from '../ports/repositories.js'
+import type { ScheduleAnnouncer } from '../ports/scheduleAnnouncer.js'
 import { findNightByOrder, resolveMatchNights } from './matchNightLadder.js'
 
 const POLL_CLOSE_OFFSET_MS = 24 * 60 * 60 * 1000
@@ -34,8 +34,7 @@ export const openMatchNightPoll = async (
   if (isErr(team)) return team
   if (!team.value) return err(notFound('team', input.guildId))
   if (!team.value.region) return err(validation('region', 'team region not configured'))
-  if (!team.value.conference)
-    return err(validation('conference', 'team conference not configured'))
+  if (!team.value.conference) return err(validation('conference', 'team conference not configured'))
   if (!team.value.announcementsChannelId)
     return err(validation('announcements_channel', 'channel not configured'))
 
@@ -43,8 +42,7 @@ export const openMatchNightPoll = async (
   if (isErr(nightsRes)) return nightsRes
   const nights = resolveMatchNights(input.guildId, nightsRes.value)
   const target = findNightByOrder(nights, input.preferenceOrder)
-  if (!target)
-    return err(notFound('match_night', `preference ${input.preferenceOrder}`))
+  if (!target) return err(notFound('match_night', `preference ${input.preferenceOrder}`))
 
   const open = deps.pollsRepo.findOpenForGuild(input.guildId)
   if (isErr(open)) return open

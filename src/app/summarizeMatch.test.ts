@@ -8,11 +8,7 @@ import type {
   PlayerRepository,
   TeamRepository,
 } from '../ports/repositories.js'
-import {
-  TEAM_PUUID,
-  summarizeMatchForPlayer,
-  summarizeMatchForTeam,
-} from './summarizeMatch.js'
+import { summarizeMatchForPlayer, summarizeMatchForTeam, TEAM_PUUID } from './summarizeMatch.js'
 
 const playerCoaching: PlayerCoaching = {
   public: {
@@ -29,9 +25,7 @@ const playerCoaching: PlayerCoaching = {
     coaching_tip: 'Pre-fire after smoke pop',
     role_involvement: {
       pct: 78,
-      criteria: [
-        { name: 'Site anchor', score_pct: 85, evidence: 'Held B all D rounds' },
-      ],
+      criteria: [{ name: 'Site anchor', score_pct: 85, evidence: 'Held B all D rounds' }],
     },
   },
 }
@@ -95,7 +89,9 @@ const fakeDeps = (overrides: Record<string, unknown> = {}) => {
   const coach = {
     summarizeMatchForPlayer: vi
       .fn()
-      .mockResolvedValue(ok({ output: playerCoaching, model: 'gemini-2.5-flash', promptHash: 'h1' })),
+      .mockResolvedValue(
+        ok({ output: playerCoaching, model: 'gemini-2.5-flash', promptHash: 'h1' }),
+      ),
     summarizeMatchForTeam: vi
       .fn()
       .mockResolvedValue(ok({ output: teamCoaching, model: 'gemini-2.5-flash', promptHash: 'h2' })),

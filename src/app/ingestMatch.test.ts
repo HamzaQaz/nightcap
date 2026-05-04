@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { isErr, isOk, ok } from '../domain/result.js'
-import type { MatchDataProvider, MatchDetail } from '../ports/matchData.js'
 import type { MatchAnnouncer } from '../ports/announcer.js'
+import type { MatchDataProvider, MatchDetail } from '../ports/matchData.js'
 import type {
   JobRepository,
   MatchRepository,
@@ -45,11 +45,20 @@ const fakeDeps = (overrides: Partial<Parameters<typeof ingestMatch>[0]> = {}) =>
     setThreadId: vi.fn().mockReturnValue(ok(undefined)),
   } as unknown as MatchRepository
   const playerRepo = {
-    listByGuild: vi
-      .fn()
-      .mockReturnValue(
-        ok([{ puuid: 'p1', guildId: 'g1', discordId: 'u1', riotName: 'C', riotTag: 'NA1', role: null, addedBy: 'self', createdAt: 0 }]),
-      ),
+    listByGuild: vi.fn().mockReturnValue(
+      ok([
+        {
+          puuid: 'p1',
+          guildId: 'g1',
+          discordId: 'u1',
+          riotName: 'C',
+          riotTag: 'NA1',
+          role: null,
+          addedBy: 'self',
+          createdAt: 0,
+        },
+      ]),
+    ),
   } as unknown as PlayerRepository
   const provider = {
     getMatchDetail: vi.fn().mockResolvedValue(ok(detail)),

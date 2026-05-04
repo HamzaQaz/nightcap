@@ -1,10 +1,6 @@
 import { isErr } from '../domain/result.js'
 import type { MatchDataProvider } from '../ports/matchData.js'
-import type {
-  JobRepository,
-  MatchRepository,
-  TeamRepository,
-} from '../ports/repositories.js'
+import type { JobRepository, MatchRepository, TeamRepository } from '../ports/repositories.js'
 import type { JobHandler } from './worker.js'
 
 export type PollPremierDeps = {

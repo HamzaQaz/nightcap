@@ -47,7 +47,9 @@ export const linkCommand = (
 })
 
 export const unlinkCommand = (playerRepo: PlayerRepository): SlashCommand => ({
-  data: new SlashCommandBuilder().setName('unlink').setDescription('Unlink your Riot account.') as unknown as SlashCommandBuilder,
+  data: new SlashCommandBuilder()
+    .setName('unlink')
+    .setDescription('Unlink your Riot account.') as unknown as SlashCommandBuilder,
   permission: 'member',
   execute: async (interaction) => {
     if (!interaction.guildId) return
