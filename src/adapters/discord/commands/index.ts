@@ -3,6 +3,7 @@ import type { PlayerRepository, TeamRepository } from '../../../ports/repositori
 import type { SlashCommand } from '../command.js'
 import { helpCommand } from './help.js'
 import { linkCommand, unlinkCommand } from './link.js'
+import { rosterCommand } from './roster.js'
 import { teamCommand } from './team.js'
 
 export type CommandDeps = {
@@ -16,4 +17,5 @@ export const allCommands = (deps: CommandDeps): SlashCommand[] => [
   teamCommand(deps.teamRepo),
   linkCommand(deps.provider, deps.playerRepo),
   unlinkCommand(deps.playerRepo),
+  rosterCommand(deps.provider, deps.playerRepo),
 ]
