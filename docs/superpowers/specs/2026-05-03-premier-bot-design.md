@@ -114,10 +114,20 @@ CREATE TABLE teams (
   guild_id TEXT PRIMARY KEY,
   henrik_team_id TEXT,
   region TEXT,                      -- na|eu|ap|kr|latam|br
+  conference TEXT,                  -- NA_US_EAST|NA_US_WEST|NA_SUPER|EU_*|... per-team Premier conference
   captain_role_id TEXT,
   member_role_id TEXT,
   announcements_channel_id TEXT,
   created_at INTEGER NOT NULL
+);
+
+-- Per-team Premier night preference (which days the team is willing to play).
+-- Used by the scrim/match-night poll fallback (see §8.2).
+CREATE TABLE team_match_nights (
+  guild_id TEXT NOT NULL,
+  weekday INTEGER NOT NULL,         -- 0=Sun ... 6=Sat (ISO style: 0-6, Sun-Sat)
+  preference_order INTEGER NOT NULL, -- 1=primary night, 2=fallback, 3=second fallback ...
+  PRIMARY KEY (guild_id, weekday)
 );
 
 CREATE TABLE players (
@@ -216,8 +226,64 @@ CREATE TABLE ai_summaries (
 - `listRecentMatches(teamId): Result<MatchSummary[], ProviderError>`
 - `getMatchDetail(region, matchId): Result<MatchDetail, ProviderError>`
 - `resolveAccount(name, tag): Result<{ puuid, region }, ProviderError>` (used by `/link`)
+- `getPremierSchedule(region, conference): Result<UpcomingMatch[], ProviderError>` — see §6.1.1
 
 Every response is parsed by a zod schema. 429 responses trigger exponential backoff (5s base, max 5 retries). Optional `HENRIK_API_KEY` raises rate limits.
+
+### 6.1.1 Premier seasons endpoint (upcoming matches + maps)
+
+Endpoint: `GET https://api.henrikdev.xyz/valorant/v1/premier/seasons/{region}`.
+
+The response shape (abridged) is:
+
+```ts
+type SeasonsResponse = {
+  status: number
+  data: Array<{
+    id: string
+    starts_at: string                 // ISO; full season window
+    ends_at: string
+    events: Array<{                   // event templates within the season
+      id: string                      // joined to scheduled_events[].event_id
+      type: 'LEAGUE' | 'SCRIM' | 'TOURNAMENT'
+      map_selection: {
+        type: 'RANDOM' | 'PICKBAN'
+        maps: Array<{ id: string; name: string }>
+      }
+      points_required_to_participate: number
+    }>
+    scheduled_events: Array<{
+      event_id: string                // joins back to events[].id
+      starts_at: string               // ISO; the actual time slot
+      ends_at: string
+      conference: string              // NA_US_EAST | NA_US_WEST | NA_SUPER | EU_* | KR_* | ...
+    }>
+  }>
+}
+```
+
+The provider's `getPremierSchedule(region, conference)` returns a flat normalized list of the team's upcoming match nights:
+
+```ts
+type UpcomingMatch = {
+  matchTimeStart: number              // epoch ms
+  matchTimeEnd: number                // epoch ms
+  eventType: 'LEAGUE' | 'SCRIM' | 'TOURNAMENT'
+  mapName: string                     // resolved from event_id → events[] → map_selection.maps[0].name
+  mapId: string
+  conference: string
+  seasonId: string
+}
+```
+
+**Resolution algorithm:**
+1. Pick the active season — the one whose `starts_at <= now < ends_at`. If none is active, return the next season's data so the bot can pre-announce.
+2. Filter `scheduled_events` to entries where `conference === team.conference`.
+3. For each match, look up `events[]` by `event_id` to get `map_selection.maps[0].name` (LEAGUE/SCRIM events list a single map; TOURNAMENT events expose a pickban pool — for those, return the full pool joined as `"pool: A, B, C, ..."`).
+4. Deduplicate consecutive entries with identical `(event_id, starts_at, conference)` — Henrik returns one row per concurrent match in the conference, but a single team only plays one of them. We surface one entry per timeslot.
+5. Sort by `matchTimeStart` ascending; return the next N (default N=4) entries.
+
+Schedule is cached in memory for 6 hours per `(region, conference)` key — the schedule rarely changes mid-season, and the endpoint payload is large.
 
 ### 6.2 Gemini (`AICoach` port)
 
@@ -278,7 +344,8 @@ Role criteria are kept in `prompts/role-criteria.md` so they can be tuned withou
 ## 7. Slash command surface (v1)
 
 **Captain-role**
-- `/team set region|captain-role|member-role|channel|henrik-team-id <value>`
+- `/team set region|conference|captain-role|member-role|channel|henrik-team-id <value>` — `conference` accepts the Premier conference id (e.g. `NA_US_WEST`); see §6.1.1
+- `/team match-nights add|remove <weekday> [preference-order]` — declares which weekdays the team plays Premier. `preference-order=1` is the primary night (e.g. Saturday), `2` is the fallback (e.g. Sunday). The match-night poll (§8.2) walks this list in order. Default if unset: SAT (1), SUN (2).
 - `/team show`
 - `/roster add @user <RiotName#TAG> [role]`
 - `/roster remove @user`
@@ -325,6 +392,27 @@ Each player gets two AI outputs per match (see §6.2 `PlayerCoaching`):
 The `private` block is still persisted in `ai_summaries.output`, so a later `/match coach` retry doesn't re-call Gemini if the prompt hash matches.
 
 **Opt-out**: not in v1. If a player wants to stop receiving DM coaching, they can block the bot via Discord's privacy settings. Add explicit per-player opt-out to the v2 parking lot only if requested.
+
+### 8.2 Match-night availability poll (Premier-aware)
+
+Premier rules cap each team at **2 ranked match games per match-week**. To respect that cap and the team's preferred nights (`team_match_nights`, see §5), the bot runs a recurring poll that walks the preference list in order and skips the week if no night gets quorum.
+
+**Cadence**: every Monday at 12:00 region-local, the bot opens the week's first poll for the **primary** match-night. The poll asks the configured `member-role` to RSVP (✅ / ❌ / ❓) for that night, including the upcoming map name fetched via `getPremierSchedule` (§6.1.1).
+
+**Fallback ladder** (using the team's defaults SAT primary / SUN fallback as the example):
+1. **Primary night poll opens Monday.** Quorum threshold: 5 ✅ (configurable; default 5 because Premier requires 5 players). Closes 24 hours before the match-night start time.
+2. If quorum is met → the night is locked. Bot pings `member-role` at T-60min and T-10min with map + match time. Done — second-night poll is **not opened** (since Riot's 2-game cap means we don't queue for the fallback if we already have a confirmed primary).
+3. If quorum is **not** met by the close time → bot posts in the announcements channel: *"Not enough players for SAT — opening SUN poll."* Then opens the **fallback** night poll, again with the SUN map fetched from `getPremierSchedule`.
+4. Same quorum + reminder rules for the fallback night.
+5. If the fallback night also fails → bot posts: *"No quorum for SAT or SUN this week — Premier match skipped. We'll try again next Monday."* No reminders fire; no further polls until next Monday.
+
+**Edge cases the implementation must handle:**
+- A player can change their RSVP at any time before the poll closes; quorum is recomputed live.
+- If a captain marks the night confirmed manually via `/scrim cancel <id>` or a future `/match confirm` command, the fallback ladder halts.
+- If `getPremierSchedule` returns no upcoming match for the team's conference (off-season), the poll still opens but the embed shows *"map TBD"* and there are no match-time reminders — only an availability check.
+- The 2-game weekly cap is **enforced by Riot in-game**, not by the bot; the bot just doesn't open redundant polls. If a captain wants extra polls (scrim nights), they use `/scrim propose` (one-shot, separate flow).
+
+**Open question (deferred)**: should `❓` (maybe) count toward quorum? v1 default: no — only ✅. Captain can override with a `/match-night force-confirm <id>` command if they want to push through.
 
 ## 9. Permissions
 

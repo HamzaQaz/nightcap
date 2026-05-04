@@ -676,6 +676,7 @@ CREATE TABLE teams (
   guild_id TEXT PRIMARY KEY,
   henrik_team_id TEXT,
   region TEXT,
+  conference TEXT,
   captain_role_id TEXT,
   member_role_id TEXT,
   announcements_channel_id TEXT,
@@ -867,6 +868,7 @@ export type TeamRecord = {
   guildId: string
   henrikTeamId: string | null
   region: string | null
+  conference: string | null
   captainRoleId: string | null
   memberRoleId: string | null
   announcementsChannelId: string | null
@@ -1029,6 +1031,7 @@ type Row = {
   guild_id: string
   henrik_team_id: string | null
   region: string | null
+  conference: string | null
   captain_role_id: string | null
   member_role_id: string | null
   announcements_channel_id: string | null
@@ -1039,6 +1042,7 @@ const toRecord = (r: Row): TeamRecord => ({
   guildId: r.guild_id,
   henrikTeamId: r.henrik_team_id,
   region: r.region,
+  conference: r.conference,
   captainRoleId: r.captain_role_id,
   memberRoleId: r.member_role_id,
   announcementsChannelId: r.announcements_channel_id,
@@ -1076,6 +1080,7 @@ export class SqliteTeamRepository implements TeamRepository {
         guildId: patch.guildId,
         henrikTeamId: patch.henrikTeamId ?? existing?.henrik_team_id ?? null,
         region: patch.region ?? existing?.region ?? null,
+        conference: patch.conference ?? existing?.conference ?? null,
         captainRoleId: patch.captainRoleId ?? existing?.captain_role_id ?? null,
         memberRoleId: patch.memberRoleId ?? existing?.member_role_id ?? null,
         announcementsChannelId:
@@ -1084,11 +1089,12 @@ export class SqliteTeamRepository implements TeamRepository {
       }
       this.db
         .prepare(
-          `INSERT INTO teams (guild_id, henrik_team_id, region, captain_role_id, member_role_id, announcements_channel_id, created_at)
-           VALUES (@guildId, @henrikTeamId, @region, @captainRoleId, @memberRoleId, @announcementsChannelId, @createdAt)
+          `INSERT INTO teams (guild_id, henrik_team_id, region, conference, captain_role_id, member_role_id, announcements_channel_id, created_at)
+           VALUES (@guildId, @henrikTeamId, @region, @conference, @captainRoleId, @memberRoleId, @announcementsChannelId, @createdAt)
            ON CONFLICT(guild_id) DO UPDATE SET
              henrik_team_id = excluded.henrik_team_id,
              region = excluded.region,
+             conference = excluded.conference,
              captain_role_id = excluded.captain_role_id,
              member_role_id = excluded.member_role_id,
              announcements_channel_id = excluded.announcements_channel_id`,
@@ -2814,10 +2820,12 @@ import { type Result, err, isErr } from '../domain/result.js'
 import type { TeamRecord, TeamRepository } from '../ports/repositories.js'
 
 const REGIONS = new Set(['na', 'eu', 'ap', 'kr', 'latam', 'br'])
+const CONFERENCE_RE = /^[A-Z]+(_[A-Z]+)+$/   // e.g. NA_US_WEST, NA_US_EAST, NA_SUPER, EU_TURKEY
 
 export type SetTeamConfigInput = {
   guildId: string
   region?: string
+  conference?: string
   henrikTeamId?: string
   captainRoleId?: string
   memberRoleId?: string
@@ -2834,6 +2842,12 @@ export const setTeamConfig = (
     if (!REGIONS.has(lower))
       return err(validation('region', `must be one of ${[...REGIONS].join(', ')}`))
     patch.region = lower
+  }
+  if (input.conference !== undefined) {
+    const upper = input.conference.toUpperCase()
+    if (!CONFERENCE_RE.test(upper))
+      return err(validation('conference', 'must be a Premier conference id like NA_US_WEST'))
+    patch.conference = upper
   }
   if (input.henrikTeamId !== undefined) patch.henrikTeamId = input.henrikTeamId
   if (input.captainRoleId !== undefined) patch.captainRoleId = input.captainRoleId
@@ -2891,6 +2905,7 @@ export const teamCommand = (teamRepo: TeamRepository): SlashCommand => ({
             .setRequired(true)
             .addChoices(
               { name: 'region', value: 'region' },
+              { name: 'conference', value: 'conference' },
               { name: 'henrik-team-id', value: 'henrik_team_id' },
               { name: 'captain-role', value: 'captain_role' },
               { name: 'member-role', value: 'member_role' },
@@ -2951,6 +2966,16 @@ export const teamCommand = (teamRepo: TeamRepository): SlashCommand => ({
           return
         }
         input.region = stringValue
+        break
+      case 'conference':
+        if (!stringValue) {
+          await interaction.reply({
+            ephemeral: true,
+            content: 'Provide string-value (e.g. NA_US_WEST).',
+          })
+          return
+        }
+        input.conference = stringValue
         break
       case 'henrik_team_id':
         if (!stringValue) {

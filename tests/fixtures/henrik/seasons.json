@@ -1,0 +1,82 @@
+{
+  "status": 200,
+  "data": [
+    {
+      "id": "season-old",
+      "starts_at": "2026-01-01T00:00:00.000Z",
+      "ends_at": "2026-04-01T00:00:00.000Z",
+      "events": [],
+      "scheduled_events": []
+    },
+    {
+      "id": "season-active",
+      "starts_at": "2026-04-15T00:00:00.000Z",
+      "ends_at": "2026-07-15T00:00:00.000Z",
+      "events": [
+        {
+          "id": "evt-league-a",
+          "type": "LEAGUE",
+          "map_selection": {
+            "type": "RANDOM",
+            "maps": [{ "id": "ascent", "name": "Ascent" }]
+          },
+          "points_required_to_participate": 0
+        },
+        {
+          "id": "evt-league-b",
+          "type": "LEAGUE",
+          "map_selection": {
+            "type": "RANDOM",
+            "maps": [{ "id": "haven", "name": "Haven" }]
+          },
+          "points_required_to_participate": 0
+        },
+        {
+          "id": "evt-tournament",
+          "type": "TOURNAMENT",
+          "map_selection": {
+            "type": "PICKBAN",
+            "maps": [
+              { "id": "lotus", "name": "Lotus" },
+              { "id": "sunset", "name": "Sunset" },
+              { "id": "split", "name": "Split" }
+            ]
+          },
+          "points_required_to_participate": 1000
+        }
+      ],
+      "scheduled_events": [
+        {
+          "event_id": "evt-league-a",
+          "starts_at": "2026-05-09T22:00:00.000Z",
+          "ends_at": "2026-05-09T23:00:00.000Z",
+          "conference": "NA_US_WEST"
+        },
+        {
+          "event_id": "evt-league-a",
+          "starts_at": "2026-05-09T22:00:00.000Z",
+          "ends_at": "2026-05-09T23:00:00.000Z",
+          "conference": "NA_US_WEST"
+        },
+        {
+          "event_id": "evt-league-b",
+          "starts_at": "2026-05-10T22:00:00.000Z",
+          "ends_at": "2026-05-10T23:00:00.000Z",
+          "conference": "NA_US_WEST"
+        },
+        {
+          "event_id": "evt-league-a",
+          "starts_at": "2026-05-09T22:00:00.000Z",
+          "ends_at": "2026-05-09T23:00:00.000Z",
+          "conference": "NA_US_EAST"
+        },
+        {
+          "event_id": "evt-tournament",
+          "starts_at": "2026-05-16T22:00:00.000Z",
+          "ends_at": "2026-05-17T02:00:00.000Z",
+          "conference": "NA_US_WEST"
+        }
+      ]
+    }
+  ]
+}

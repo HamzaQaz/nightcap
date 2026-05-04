@@ -1,0 +1,7 @@
+export const POLL_PREMIER_JOB = 'pollPremier'
+export const INGEST_MATCH_JOB = 'ingestMatch'
+export const SUMMARIZE_MATCH_JOB = 'summarizeMatch'
+export const OPEN_MATCH_NIGHT_POLL_JOB = 'openMatchNightPoll'
+export const CLOSE_MATCH_NIGHT_POLL_JOB = 'closeMatchNightPoll'
+export const CLOSE_DUE_MATCH_NIGHT_POLLS_JOB = 'closeDueMatchNightPolls'
+export const SEND_REMINDER_JOB = 'sendReminder'
