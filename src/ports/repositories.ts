@@ -92,3 +92,87 @@ export interface AISummariesRepository {
     playerPuuid: string,
   ): Result<AISummaryRecord | null, DomainError>
 }
+
+export type MatchNight = {
+  guildId: string
+  weekday: number
+  preferenceOrder: number
+}
+
+export interface MatchNightsRepository {
+  upsert(night: MatchNight): Result<void, DomainError>
+  remove(guildId: string, weekday: number): Result<void, DomainError>
+  listByGuild(guildId: string): Result<MatchNight[], DomainError>
+}
+
+export type ScrimRecord = {
+  id: number
+  guildId: string
+  proposedBy: string
+  startAt: number
+  status: 'proposed' | 'confirmed' | 'cancelled' | 'past'
+  messageId: string | null
+  note: string | null
+  createdAt: number
+}
+
+export interface ScrimsRepository {
+  insert(scrim: Omit<ScrimRecord, 'id'>): Result<number, DomainError>
+  setStatus(id: number, status: ScrimRecord['status']): Result<void, DomainError>
+  setMessageId(id: number, messageId: string): Result<void, DomainError>
+  findById(id: number): Result<ScrimRecord | null, DomainError>
+  listOpenByGuild(guildId: string): Result<ScrimRecord[], DomainError>
+}
+
+export type RsvpRecord = {
+  scrimId: number
+  discordId: string
+  status: 'yes' | 'no' | 'maybe'
+  updatedAt: number
+}
+
+export interface RsvpsRepository {
+  upsert(rsvp: RsvpRecord): Result<void, DomainError>
+  countYes(scrimId: number): Result<number, DomainError>
+  listByScrim(scrimId: number): Result<RsvpRecord[], DomainError>
+}
+
+export type MatchNightPollRecord = {
+  id: number
+  guildId: string
+  weekday: number
+  preferenceOrder: number
+  matchStartAt: number
+  matchEndAt: number
+  mapName: string | null
+  messageId: string | null
+  status: 'open' | 'closed_quorum' | 'closed_no_quorum' | 'cancelled'
+  closesAt: number
+  yesCount: number
+  ladderDone: boolean
+  createdAt: number
+}
+
+export interface MatchNightPollsRepository {
+  insert(p: Omit<MatchNightPollRecord, 'id'>): Result<number, DomainError>
+  setStatus(id: number, status: MatchNightPollRecord['status']): Result<void, DomainError>
+  setMessageId(id: number, messageId: string): Result<void, DomainError>
+  setLadderDone(id: number, done: boolean): Result<void, DomainError>
+  setYesCount(id: number, n: number): Result<void, DomainError>
+  findById(id: number): Result<MatchNightPollRecord | null, DomainError>
+  findOpenForGuild(guildId: string): Result<MatchNightPollRecord | null, DomainError>
+  listClosingBefore(now: number): Result<MatchNightPollRecord[], DomainError>
+}
+
+export type PollRsvpRecord = {
+  pollId: number
+  discordId: string
+  status: 'yes' | 'no' | 'maybe'
+  updatedAt: number
+}
+
+export interface PollRsvpsRepository {
+  upsert(r: PollRsvpRecord): Result<void, DomainError>
+  countYes(pollId: number): Result<number, DomainError>
+  listByPoll(pollId: number): Result<PollRsvpRecord[], DomainError>
+}

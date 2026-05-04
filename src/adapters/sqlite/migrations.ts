@@ -12,4 +12,8 @@ export const ALL_MIGRATIONS: Migration[] = [
     id: '0002_ai_summaries',
     sql: readFileSync(resolve(root, 'migrations/0002_ai_summaries.sql'), 'utf8'),
   },
+  {
+    id: '0003_scheduling',
+    sql: readFileSync(resolve(root, 'migrations/0003_scheduling.sql'), 'utf8'),
+  },
 ]
