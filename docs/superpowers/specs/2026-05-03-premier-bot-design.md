@@ -231,15 +231,25 @@ Each player call returns **two blocks** in a single Gemini request — `public` 
 ```ts
 type PlayerCoaching = {
   public: {
-    tldr: string               // <= 160 chars, team-safe framing
-    highlight: string          // one positive moment worth calling out
-    focus_area: string         // one improvement area, blameless wording
+    tldr: string                       // <= 160 chars, team-safe framing
+    highlight: string                  // one positive moment worth calling out
+    focus_area: string                 // one improvement area, blameless wording
+    role_involvement_pct: number       // 0-100, how much the player fulfilled their assigned role
+    role_involvement_one_liner: string // <= 100 chars rationale for the pct
   }
   private: {
-    tldr: string               // <= 200 chars, candid
-    did_well: string[]         // 1-3 items
-    improve: string[]          // 1-3 items, specific and direct
-    coaching_tip: string       // role-specific actionable next-game advice
+    tldr: string                       // <= 200 chars, candid
+    did_well: string[]                 // 1-3 items
+    improve: string[]                  // 1-3 items, specific and direct
+    coaching_tip: string               // role-specific actionable next-game advice
+    role_involvement: {
+      pct: number                      // matches the public pct
+      criteria: Array<{
+        name: string                   // e.g., "Entry attempts", "Site holds", "Util on retake"
+        score_pct: number              // 0-100
+        evidence: string               // <= 140 chars, what in the match data led to this
+      }>
+    }
   }
 }
 
@@ -253,6 +263,18 @@ type TeamCoaching = {
 
 A single Gemini call per player produces both blocks (cheaper, more consistent tone across the two outputs). The full `PlayerCoaching` JSON is persisted in `ai_summaries.output`; the dispatcher decides where each block goes.
 
+**Role-involvement scoring rubric** (passed in the prompt so the model has consistent criteria across matches):
+
+| Role | Criteria the model scores 0-100 on |
+|---|---|
+| Duelist | entry attempts, opening duels won, space taken, util used to enable team |
+| Initiator | recon util landed, flashes that led to kills/trades, info called for, post-plant setups |
+| Controller | smokes placed at executable timings, mid control util, retake smokes, utility economy |
+| Sentinel | site anchor presence, flank watches, util held in reserve, retake util |
+| Flex | weighted average of the above, scoped to the agent actually played that map |
+
+Role criteria are kept in `prompts/role-criteria.md` so they can be tuned without code changes. The final `role_involvement_pct` is the model's weighted aggregate of the per-criterion scores; per-criterion scores + evidence go into the private block so the player can see *why*.
+
 ## 7. Slash command surface (v1)
 
 **Captain-role**
@@ -264,7 +286,7 @@ A single Gemini call per player produces both blocks (cheaper, more consistent t
 - `/scrim cancel <id>`
 
 **Member-role** (and self-service)
-- `/link <RiotName#TAG>` — verifies via Henrik `/account`, stores puuid
+- `/link <RiotName#TAG>` — verifies via Henrik `/account`, stores puuid. **Does not accept a role argument** — role stays `NULL` until a captain assigns it via `/roster set-role` (see §9). The bot replies with an ephemeral note telling the player their captain still needs to assign their in-game role.
 - `/unlink`
 - `/scrim propose <date> <time> [note]`
 - `/match latest` — re-pulls and re-posts the most recent match
@@ -311,6 +333,7 @@ The `private` block is still persisted in `ai_summaries.output`, so a later `/ma
 - Server admins (`Administrator` permission) bypass all role checks — escape hatch for first install, before roles are configured
 - All inputs (Discord IDs, IGNs, dates) parsed by zod before reaching use cases
 - `/link` is gated by `member-role` per the brainstorm; captain-managed `/roster add` is the override path
+- **Role assignment is captain-only**: `/link` never accepts a role; players cannot self-assign or change their own role. Role is set exclusively via `/roster add @user … <role>` (initial) or `/roster set-role @user <role>` (change), both captain-gated. AI summaries that run before a player has a role assigned default to "flex" criteria for that match and add a note in the public block: *"@player has no assigned role yet — captain, set one with `/roster set-role` for sharper coaching."*
 
 ## 10. Configuration
 
