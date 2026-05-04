@@ -73,3 +73,22 @@ export interface JobRepository {
   markDone(id: number): Result<void, DomainError>
   markFailed(id: number, error: string, nextRunAt: number | null): Result<void, DomainError>
 }
+
+export type AISummaryRecord = {
+  guildId: string
+  matchId: string
+  playerPuuid: string
+  model: string
+  promptHash: string
+  output: string
+  createdAt: number
+}
+
+export interface AISummariesRepository {
+  upsert(record: AISummaryRecord): Result<void, DomainError>
+  find(
+    guildId: string,
+    matchId: string,
+    playerPuuid: string,
+  ): Result<AISummaryRecord | null, DomainError>
+}

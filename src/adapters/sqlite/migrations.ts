@@ -8,4 +8,8 @@ const root = resolve(here, '../../..')
 
 export const ALL_MIGRATIONS: Migration[] = [
   { id: '0001_init', sql: readFileSync(resolve(root, 'migrations/0001_init.sql'), 'utf8') },
+  {
+    id: '0002_ai_summaries',
+    sql: readFileSync(resolve(root, 'migrations/0002_ai_summaries.sql'), 'utf8'),
+  },
 ]
